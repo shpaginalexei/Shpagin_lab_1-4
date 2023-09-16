@@ -19,7 +19,6 @@ struct Station {
     int efficiency;
 };
 
-
 template <typename T>
 T GetCorrectNumValue(const string message, T min, T max, const string error_message) {
     bool correct_answer = true;
@@ -45,12 +44,12 @@ T GetCorrectNumValue(const string message, T min, T max, const string error_mess
 
 bool GetCorrectYesNoValue(const string message) {
     bool correct_answer = true;
-    string s;
+    string x;
     do {
         correct_answer = true;
         cout << message;
-        cin >> s;
-        if (!(s == "y" || s == "n" || s == "Y" || s == "N")) {
+        cin >> x;
+        if (!(x == "y" || x == "n" || x == "Y" || x == "N")) {
             cout << "**The number must be Y or N, please repeat\n";
             correct_answer = false;
         }
@@ -58,14 +57,14 @@ bool GetCorrectYesNoValue(const string message) {
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     } while (!correct_answer);
 
-    return (s == "y" || s == "Y" ? true : false);
+    return (x == "y" || x == "Y" ? true : false);
 }
 
 void InputPipe(vector<Pipe>& pipes) {
     Pipe p;
     cout << "-> Add Pipe" << endl;
 
-    cout << "name: ";
+    cout << "\nname: ";
     cin >> p.name;
 
     p.lenght = GetCorrectNumValue<double>("lenght (km): ", 0.0, INT_MAX, 
@@ -81,32 +80,14 @@ void InputPipe(vector<Pipe>& pipes) {
     cout << "\n";
 }
 
-void ViewPipes(const vector<Pipe>& pipes) {
-    cout << "-> View Pipes" << endl;
-
-    if (pipes.capacity() == 0) {
-        cout << "\n*The system hasn't pipes\n";
-        return;
-    }
-
-    for (int i = 0; i < pipes.capacity(); i++) {
-        cout << "\n\tPipe " << i + 1 << endl
-            << "name - " << pipes[i].name << endl
-            << "lenght - " << pipes[i].lenght << " km" << endl
-            << "diameter - " << pipes[i].diameter << " mm" << endl
-            << "in repair - " << (pipes[i].in_repair ? "yes" : "no") << endl; 
-    }
-    cout << "\n";
-}
-
 void InputStation(vector<Station>& stations) {
     Station s;
     cout << "-> Add Station" << endl;
 
-    cout << "name: ";
+    cout << "\nname: ";
     cin >> s.name;
 
-    s.num_workshops = GetCorrectNumValue<int>("number workshops: ", 0, INT_MAX, 
+    s.num_workshops = GetCorrectNumValue<int>("number workshops: ", 0, INT_MAX,
         "**The number must be positive, please repeat\n");
 
     s.workshops_in_operation = GetCorrectNumValue<int>("workshops in operation: ", -1, s.num_workshops,
@@ -120,6 +101,27 @@ void InputStation(vector<Station>& stations) {
     cout << "\n";
 }
 
+void ViewPipes(const vector<Pipe>& pipes) {
+    cout << "-> View Pipes" << endl;
+
+    if (pipes.capacity() == 0) {
+        cout << "\n*The system hasn't pipes\n";
+        return;
+    }
+
+    int i = 1;
+    for (auto p: pipes) {
+        cout << "\n\tPipe " << i << endl
+            << "name - " << p.name << endl
+            << "lenght - " << p.lenght << " km" << endl
+            << "diameter - " << p.diameter << " mm" << endl
+            << "in repair - " << (p.in_repair ? "yes" : "no") << endl;
+        i++;
+    }
+
+    cout << "\n";
+}
+
 void ViewStations(const vector<Station>& stations) {
     cout << "-> View Stations" << endl;
 
@@ -128,13 +130,16 @@ void ViewStations(const vector<Station>& stations) {
         return;
     }
 
-    for (int i = 0; i < stations.capacity(); i++) {
-        cout << "\n\tStation " << i + 1 << endl
-            << "name - " << stations[i].name << endl
-            << "number workshops - " << stations[i].num_workshops << endl
-            << "workshops in operation - " << stations[i].workshops_in_operation << endl
-            << "efficiency - " << stations[i].efficiency << "%" << endl; 
+    int i = 1;
+    for (auto s: stations) {
+        cout << "\n\tStation " << i << endl
+            << "name - " << s.name << endl
+            << "number workshops - " << s.num_workshops << endl
+            << "workshops in operation - " << s.workshops_in_operation << endl
+            << "efficiency - " << s.efficiency << "%" << endl;
+        i++;
     }
+
     cout << "\n";
 }
 
@@ -155,8 +160,8 @@ void BackToMenu() {
 
 int main()
 {
-    const int logo3_size = 6;
-    const string logo3[logo3_size] = {
+    const int logo_size = 6;
+    const string logo[logo_size] = {
     "______ _____ _____ ",
     "| ___ \\_   _/  ___|",
     "| |_/ / | | \\ `--. ",
@@ -211,11 +216,11 @@ int main()
     vector<Station> stations = {};
 
     while (true) {
-        ViewText(logo3, logo3_size);
+        ViewText(logo, logo_size);
         ViewText(main_menu, main_menu_size);
         int choice = GetCorrectNumValue<int>(">> ", -1, 7, "**The number must be in the range 0..7, please repeat\n");
         system("cls");
-        ViewText(logo3, logo3_size);
+        ViewText(logo, logo_size);
         switch (choice) {
             case 1:
             {
@@ -234,7 +239,7 @@ int main()
                 ViewText(obj_menu, obj_menu_size);
                 int choice2 = GetCorrectNumValue<int>(">> ", -1, 2, "**The number must be in the range 0..2, please repeat\n");
                 system("cls");
-                ViewText(logo3, logo3_size);
+                ViewText(logo, logo_size);
                 switch (choice2) {
                     case 1:
                     {
@@ -259,25 +264,25 @@ int main()
             }
             case 4:
             {
-                cout << "->Edit Pipe\n" << endl;
+                cout << "-> Edit Pipe\n" << endl;
                 BackToMenu();
                 break;
             }
             case 5:
             {
-                cout << "->Edit Station\n" << endl;
+                cout << "-> Edit Station\n" << endl;
                 BackToMenu();
                 break;
             }
             case 6:
             {
-                cout << "->Save\n" << endl;
+                cout << "-> Save\n" << endl;
                 BackToMenu();
                 break;
             }
             case 7:
             {
-                cout << "->Load\n" << endl;
+                cout << "-> Load\n" << endl;
                 BackToMenu();
                 break;
             }
