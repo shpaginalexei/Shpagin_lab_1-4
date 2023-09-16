@@ -105,7 +105,7 @@ void ViewPipes(const vector<Pipe>& pipes) {
     cout << "-> View Pipes" << endl;
 
     if (pipes.capacity() == 0) {
-        cout << "\n*The system hasn't pipes\n";
+        cout << "\n*The system hasn't pipes\n\n";
         return;
     }
 
@@ -126,7 +126,7 @@ void ViewStations(const vector<Station>& stations) {
     cout << "-> View Stations" << endl;
 
     if (stations.capacity() == 0) {
-        cout << "\n*The system hasn't stations\n";
+        cout << "\n*The system hasn't stations\n\n";
         return;
     }
 
@@ -147,13 +147,22 @@ void EditPipe(vector<Pipe>& pipes) {
     cout << "-> Edit Pipe" << endl;
 
     if (pipes.capacity() == 0) {
-        cout << "\n*The system hasn't pipes\n";
+        cout << "\n*The system hasn't pipes\n\n";
         return;
     }
 
     cout << '\n';
-    int x = GetCorrectNumValue<int>("What Pipe do you want to edit (1-" + std::to_string(pipes.capacity()) + ")?: ", 0, pipes.capacity(),
-        "**The number must be in the range 1.." + std::to_string(pipes.capacity()) + ", please repeat\n") - 1;
+    int x = -1;
+    if (pipes.capacity() == 1) {
+        cout << "Only one Pipe in system\n" << endl;
+        if (GetCorrectYesNoValue("Do you want to edit this Pipe (Y/n)?: "))
+            x = 0;
+        else
+            return;
+    }
+    else
+        x = GetCorrectNumValue<int>("What Pipe do you want to edit (1-" + std::to_string(pipes.capacity()) + ")?: ", 0, pipes.capacity(),
+            "**The number must be in the range 1.." + std::to_string(pipes.capacity()) + ", please repeat\n") - 1;
     Pipe& p = pipes[x];
 
     cout << "\n\tPipe " << x + 1 << endl
@@ -167,6 +176,57 @@ void EditPipe(vector<Pipe>& pipes) {
     cout << "\n\tPipe " << x << endl
         << "..." << endl
         << "in repair - " << (p.in_repair ? "yes" : "no") << endl;
+}
+
+void EditStation(vector<Station>& stations) {
+    cout << "-> Edit Station" << endl;
+
+    if (stations.capacity() == 0) {
+        cout << "\n*The system hasn't stations\n\n";
+        return;
+    }
+
+    cout << '\n';
+    int x = -1;
+    if (stations.capacity() == 1) {
+        cout << "Only one Station in system\n" << endl;
+        if (GetCorrectYesNoValue("Do you want to edit this Station (Y/n)?: "))
+            x = 0;
+        else {
+            cout << '\n';
+            return;
+        }
+    }
+    else
+        x = GetCorrectNumValue<int>("What Station do you want to edit (1-" + std::to_string(stations.capacity()) + ")?: ", 0, stations.capacity(),
+            "**The number must be in the range 1.." + std::to_string(stations.capacity()) + ", please repeat\n") - 1;
+    Station& s = stations[x];
+
+    cout << "\n\tStation " << x + 1 << endl
+        << "..." << endl
+        << "number workshops - " << s.num_workshops << endl
+        << "workshops in operation - " << s.workshops_in_operation << endl;
+
+    bool confirm = GetCorrectYesNoValue("\nAre you sure to change this parameter (Y/n)?: ");
+    if (confirm) {
+        if (s.workshops_in_operation > 0 && s.workshops_in_operation < s.num_workshops) {
+            int count = GetCorrectNumValue("Start (1) or stop (0) the workshop?: ", -1, 1,
+                "**The number must be in the range 0..1, please repeat\n");
+            count == 1 ? s.workshops_in_operation++ : s.workshops_in_operation--;
+        }
+        else if (s.workshops_in_operation == 0) {
+            if (GetCorrectYesNoValue("Start one workshop (Y/n)?: "))
+                s.workshops_in_operation++;
+        }
+        else if ((int)s.workshops_in_operation == (int)s.num_workshops) {
+            if (GetCorrectYesNoValue("Stop one workshop (Y/n)?: "))
+                s.workshops_in_operation--;
+        }
+    }
+    cout << "\n\tStation " << x + 1 << endl
+        << "..." << endl
+        << "number workshops - " << s.num_workshops << endl
+        << "workshops in operation - " << s.workshops_in_operation << endl;
 }
 
 void ViewText(const string menu[], int size) {
@@ -296,7 +356,7 @@ int main()
             }
             case 5:
             {
-                cout << "-> Edit Station\n" << endl;
+                EditStation(stations);
                 BackToMenu();
                 break;
             }
