@@ -143,6 +143,32 @@ void ViewStations(const vector<Station>& stations) {
     cout << "\n";
 }
 
+void EditPipe(vector<Pipe>& pipes) {
+    cout << "-> Edit Pipe" << endl;
+
+    if (pipes.capacity() == 0) {
+        cout << "\n*The system hasn't pipes\n";
+        return;
+    }
+
+    cout << '\n';
+    int x = GetCorrectNumValue<int>("What Pipe do you want to edit (1-" + std::to_string(pipes.capacity()) + ")?: ", 0, pipes.capacity(),
+        "**The number must be in the range 1.." + std::to_string(pipes.capacity()) + ", please repeat\n") - 1;
+    Pipe& p = pipes[x];
+
+    cout << "\n\tPipe " << x + 1 << endl
+        << "..." << endl
+        << "in repair - " << (p.in_repair ? "yes" : "no") << endl;
+    
+    bool confirm = GetCorrectYesNoValue("\nAre you sure to change this parameter (Y/n)?: ");
+    if (confirm)
+        p.in_repair = !p.in_repair;
+
+    cout << "\n\tPipe " << x << endl
+        << "..." << endl
+        << "in repair - " << (p.in_repair ? "yes" : "no") << endl;
+}
+
 void ViewText(const string menu[], int size) {
     for (size_t i{}; i < size; i++) {
         cout << menu[i] << endl;
@@ -264,7 +290,7 @@ int main()
             }
             case 4:
             {
-                cout << "-> Edit Pipe\n" << endl;
+                EditPipe(pipes);
                 BackToMenu();
                 break;
             }
