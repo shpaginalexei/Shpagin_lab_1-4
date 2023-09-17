@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 #include <conio.h>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
@@ -34,7 +36,7 @@ T GetCorrectNumValue(const string message, T min, T max, const string error_mess
         else if (x <= min || x > max) {
             cout << error_message;
             correct_answer = false;
-        }
+        }        
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
     } while (!correct_answer);
@@ -48,13 +50,15 @@ bool GetCorrectYesNoValue(const string message) {
     do {
         correct_answer = true;
         cout << message;
-        cin >> x;
+        //cin >> x;
+        getline(cin, x);
         if (!(x == "y" || x == "n" || x == "Y" || x == "N")) {
             cout << "**The number must be Y or N, please repeat\n";
             correct_answer = false;
         }
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        _flushall();
+        /*cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');*/
     } while (!correct_answer);
 
     return (x == "y" || x == "Y" ? true : false);
@@ -64,8 +68,11 @@ void InputPipe(vector<Pipe>& pipes) {
     Pipe p;
     cout << "-> Add Pipe" << endl;
 
+    //p.in_repair = GetCorrectYesNoValue("in repair? (Y/n): ");
+
     cout << "\nname: ";
-    cin >> p.name;
+    // cin >> p.name;
+    getline(cin, p.name);
 
     p.lenght = GetCorrectNumValue<double>("lenght (km): ", 0.0, INT_MAX, 
         "**The number must be positive, please repeat\n");
@@ -85,7 +92,8 @@ void InputStation(vector<Station>& stations) {
     cout << "-> Add Station" << endl;
 
     cout << "\nname: ";
-    cin >> s.name;
+    // cin >> s.name;
+    getline(cin, s.name);
 
     s.num_workshops = GetCorrectNumValue<int>("number workshops: ", 0, INT_MAX,
         "**The number must be positive, please repeat\n");
@@ -102,7 +110,8 @@ void InputStation(vector<Station>& stations) {
 }
 
 void ViewPipes(const vector<Pipe>& pipes) {
-    cout << "-> View Pipes" << endl;
+    cout << "-> View Objects" << endl
+        << "     -> Pipes" << endl;
 
     if (pipes.capacity() == 0) {
         cout << "\n*The system hasn't pipes\n\n";
@@ -123,7 +132,8 @@ void ViewPipes(const vector<Pipe>& pipes) {
 }
 
 void ViewStations(const vector<Station>& stations) {
-    cout << "-> View Stations" << endl;
+    cout << "-> View Objects" << endl
+        << "     -> Stations" << endl;
 
     if (stations.capacity() == 0) {
         cout << "\n*The system hasn't stations\n\n";
@@ -154,11 +164,13 @@ void EditPipe(vector<Pipe>& pipes) {
     cout << '\n';
     int x = -1;
     if (pipes.capacity() == 1) {
-        cout << "Only one Pipe in system\n" << endl;
+        cout << "*Only one Pipe in system\n" << endl;
         if (GetCorrectYesNoValue("Do you want to edit this Pipe (Y/n)?: "))
             x = 0;
-        else
+        else {
+            cout << '\n';
             return;
+        }            
     }
     else
         x = GetCorrectNumValue<int>("What Pipe do you want to edit (1-" + std::to_string(pipes.capacity()) + ")?: ", 0, pipes.capacity(),
@@ -167,15 +179,15 @@ void EditPipe(vector<Pipe>& pipes) {
 
     cout << "\n\tPipe " << x + 1 << endl
         << "..." << endl
-        << "in repair - " << (p.in_repair ? "yes" : "no") << endl;
+        << "in repair - " << (p.in_repair ? "yes\n" : "no\n") << endl;
     
-    bool confirm = GetCorrectYesNoValue("\nAre you sure to change this parameter (Y/n)?: ");
+    bool confirm = GetCorrectYesNoValue("Are you sure to change this parameter (Y/n)?: ");
     if (confirm)
         p.in_repair = !p.in_repair;
 
-    cout << "\n\tPipe " << x << endl
+    cout << "\n\tPipe " << x + 1 << endl
         << "..." << endl
-        << "in repair - " << (p.in_repair ? "yes" : "no") << endl;
+        << "in repair - " << (p.in_repair ? "yes\n" : "no\n") << endl;
 }
 
 void EditStation(vector<Station>& stations) {
@@ -189,7 +201,7 @@ void EditStation(vector<Station>& stations) {
     cout << '\n';
     int x = -1;
     if (stations.capacity() == 1) {
-        cout << "Only one Station in system\n" << endl;
+        cout << "*Only one Station in system\n" << endl;
         if (GetCorrectYesNoValue("Do you want to edit this Station (Y/n)?: "))
             x = 0;
         else {
@@ -205,9 +217,9 @@ void EditStation(vector<Station>& stations) {
     cout << "\n\tStation " << x + 1 << endl
         << "..." << endl
         << "number workshops - " << s.num_workshops << endl
-        << "workshops in operation - " << s.workshops_in_operation << endl;
+        << "workshops in operation - " << s.workshops_in_operation << '\n' << endl;
 
-    bool confirm = GetCorrectYesNoValue("\nAre you sure to change this parameter (Y/n)?: ");
+    bool confirm = GetCorrectYesNoValue("Are you sure to change this parameter (Y/n)?: ");
     if (confirm) {
         if (s.workshops_in_operation > 0 && s.workshops_in_operation < s.num_workshops) {
             int count = GetCorrectNumValue("Start (1) or stop (0) the workshop?: ", -1, 1,
@@ -226,7 +238,110 @@ void EditStation(vector<Station>& stations) {
     cout << "\n\tStation " << x + 1 << endl
         << "..." << endl
         << "number workshops - " << s.num_workshops << endl
-        << "workshops in operation - " << s.workshops_in_operation << endl;
+        << "workshops in operation - " << s.workshops_in_operation << '\n' << endl;
+}
+
+void SavePipes(const vector<Pipe>& pipes, const string& file_name) {
+    cout << "-> Save" << endl
+        << "     -> Save Pipe" << endl;
+
+    ofstream file;
+    file.open(file_name + ".txt", ios::out);
+    int count = 0;
+    if (file.is_open()) {
+        for (Pipe obj : pipes) {
+            file << obj.name << ';'
+                 << obj.lenght << ';'
+                 << obj.diameter << ';'
+                 << obj.in_repair << '\n';
+            count++;
+        }
+        cout << '\n' << count << " Pipes saved successfully!\n" << endl;
+    }
+    file.close();    
+}
+
+void SaveStations(const vector<Station>& stations, const string& file_name) {
+    cout << "-> Save" << endl
+        << "     -> Save Stations" << endl;
+
+    ofstream file;
+    file.open(file_name + ".txt", ios::out);
+    if (file.is_open()) {
+        int count = 0;
+        for (Station obj : stations) {
+            file << obj.name << ';'
+                 << obj.num_workshops << ';'
+                 << obj.workshops_in_operation << ';'
+                 << obj.efficiency << '\n';
+            count++;
+        }
+        cout << '\n' << count << " Stations saved successfully!\n" << endl;
+    }
+    file.close();    
+}
+
+void LoadPipes(vector<Pipe>& pipes, const string& file_name) {
+    cout << "-> Load" << endl
+        << "     -> Load Pipe" << endl;
+    pipes.clear();
+
+    ifstream file;
+    file.open(file_name + ".txt", ios::in);
+    string line;    
+    if (file.is_open()) {
+        int count = 0;
+        while (getline(file, line)) {
+            Pipe p;
+            istringstream iss(line);
+
+            string token;
+            int i = 0;
+            while (getline(iss, token, ';')) {
+                if (i == 0) p.name = token;
+                if (i == 1) p.lenght = stod(token);
+                if (i == 2) p.diameter = stoi(token);
+                if (i == 3) p.in_repair = stoi(token);
+                i++;
+            }
+            pipes.push_back(p);
+            count++;
+        }
+        cout << '\n' << count << " Pipes loaded successfully!\n" << endl;
+    }   
+    file.close();    
+}
+
+void LoadStations(vector<Station>& stations, const string& file_name) {
+    cout << "-> Load" << endl
+        << "     -> Load Stations" << endl;
+    stations.clear();
+
+    ifstream file;
+    file.open(file_name + ".txt", ios::in);
+    string line;
+    
+    if (file.is_open()) {
+        int count = 0;
+        while (getline(file, line)) {
+            Station s;
+            istringstream iss(line);
+
+            string token;
+            int i = 0;
+            while (getline(iss, token, ';')) {
+                if (i == 0) s.name = token;
+                if (i == 1) s.num_workshops = stoi(token);
+                if (i == 2) s.workshops_in_operation = stoi(token);
+                if (i == 3) s.efficiency = stoi(token);
+                i++;
+            }
+            stations.push_back(s);
+            count++;
+        }
+        cout << '\n' << count << " Stations loaded successfully!\n" << endl;
+    }
+    file.close();    
 }
 
 void ViewText(const string menu[], int size) {
@@ -283,18 +398,37 @@ int main()
     const string main_menu[main_menu_size] = {
     "1. Add Pipe",
     "2. Add Station", 
-    "3. View All Objects",
+    "3. View Objects",
     "4. Edit Pipe",
     "5. Edit Station",
     "6. Save",
     "7. Load",
     "0. Exit"};
 
-    const int obj_menu_size = 4;
-    const string obj_menu[obj_menu_size] = {
-    "-> View All Objects",
+    const int view_main_size = 5;
+    const string view_main[view_main_size] = {
+    "-> View Objects",
     "     1. View Pipe",
     "     2. View Station",
+    "     3. View All",
+    "     0. Return"
+    };
+
+    const int save_menu_size = 5;
+    const string save_menu[save_menu_size] = {
+    "-> Save",
+    "     1. Save Pipe",
+    "     2. Save Station",
+    "     3. Save All",
+    "     0. Return"
+    };
+
+    const int load_menu_size = 5;
+    const string load_menu[load_menu_size] = {
+    "-> Load",
+    "     1. Load Pipe",
+    "     2. Load Station",
+    "     3. Load All",
     "     0. Return"
     };
     
@@ -322,8 +456,8 @@ int main()
             }
             case 3:
             {
-                ViewText(obj_menu, obj_menu_size);
-                int choice2 = GetCorrectNumValue<int>(">> ", -1, 2, "**The number must be in the range 0..2, please repeat\n");
+                ViewText(view_main, view_main_size);
+                int choice2 = GetCorrectNumValue<int>(">> ", -1, 3, "**The number must be in the range 0..3, please repeat\n");
                 system("cls");
                 ViewText(logo, logo_size);
                 switch (choice2) {
@@ -335,6 +469,13 @@ int main()
                     }
                     case 2:
                     {
+                        ViewStations(stations);
+                        BackToMenu();
+                        break;
+                    }
+                    case 3:
+                    {
+                        ViewPipes(pipes);
                         ViewStations(stations);
                         BackToMenu();
                         break;
@@ -362,14 +503,72 @@ int main()
             }
             case 6:
             {
-                cout << "-> Save\n" << endl;
-                BackToMenu();
+                ViewText(save_menu, save_menu_size);
+                int choice3 = GetCorrectNumValue<int>(">> ", -1, 3, "**The number must be in the range 0..3, please repeat\n");
+                system("cls");
+                ViewText(logo, logo_size);
+                switch (choice3) {
+                    case 1:
+                    {
+                        SavePipes(pipes, "pipes");
+                        BackToMenu();
+                        break;
+                    }
+                    case 2:
+                    {
+                        SaveStations(stations, "stations");
+                        BackToMenu();
+                        break;
+                    }
+                    case 3:
+                    {
+                        SavePipes(pipes, "pipes");
+                        SaveStations(stations, "stations");
+                        BackToMenu();
+                        break;
+                    }
+                    case 0:
+                    default:
+                    {
+                        system("cls");
+                        break;
+                    }
+                }
                 break;
             }
             case 7:
             {
-                cout << "-> Load\n" << endl;
-                BackToMenu();
+                ViewText(load_menu, load_menu_size);
+                int choice4 = GetCorrectNumValue<int>(">> ", -1, 3, "**The number must be in the range 0..3, please repeat\n");
+                system("cls");
+                ViewText(logo, logo_size);
+                switch (choice4) {
+                case 1:
+                {
+                    LoadPipes(pipes, "pipes");
+                    BackToMenu();
+                    break;
+                }
+                case 2:
+                {
+                    LoadStations(stations, "stations");
+                    BackToMenu();
+                    break;
+                }
+                case 3:
+                {
+                    LoadPipes(pipes, "pipes");
+                    LoadStations(stations, "stations");
+                    BackToMenu();
+                    break;
+                }
+                case 0:
+                default:
+                {
+                    system("cls");
+                    break;
+                }
+                }
                 break;
             }
             case 0:
