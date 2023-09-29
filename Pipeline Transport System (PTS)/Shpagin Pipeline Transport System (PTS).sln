@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pipeline Transport System (PTS)", "Pipeline Transport System (PTS).vcxproj", "{20607323-3BA7-4F4F-8AFE-F49116FEB593}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Shpagin Pipeline Transport System (PTS)", "Shpagin Pipeline Transport System (PTS).vcxproj", "{20607323-3BA7-4F4F-8AFE-F49116FEB593}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
