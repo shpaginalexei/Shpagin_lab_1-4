@@ -127,11 +127,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Shpagin Pipeline Transport System (PTS).cpp" />
+    <ClCompile Include="Menu.cpp" />
+    <ClCompile Include="Pipe.cpp" />
+    <ClCompile Include="Source.cpp" />
+    <ClCompile Include="Station.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="pipes.txt" />
-    <Text Include="stations.txt" />
+    <ClInclude Include="Menu.h" />
+    <ClInclude Include="Pipe.h" />
+    <ClInclude Include="Station.h" />
+    <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
