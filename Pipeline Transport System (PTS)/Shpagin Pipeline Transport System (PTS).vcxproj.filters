@@ -24,7 +24,7 @@
     <ClCompile Include="Menu.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="Source.cpp">
+    <ClCompile Include="Shpagin Pipeline Transport System %28PTS%29.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
