@@ -6,11 +6,14 @@ class Pipe
 {
 public:
 	static int max_id;
+	bool status = false;
 
 	Pipe();
 
 	int get_id() const;
+	std::string get_name() const;
 	std::string get_status() const;
+
 	void change_status();
 
 	friend std::istream& operator>> (std::istream&, Pipe&);
@@ -23,7 +26,6 @@ private:
 	int id;
 	std::string name = "";
 	double lenght = 0;
-	int diameter = 0;
-	bool status = false;
+	int diameter = 0;	
 };
 

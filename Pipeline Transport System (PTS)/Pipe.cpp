@@ -7,7 +7,7 @@
 using namespace std;
 
 
-int Pipe::max_id = 1;
+int Pipe::max_id = 0;
 
 Pipe::Pipe() {
     id = ++max_id;
@@ -15,6 +15,10 @@ Pipe::Pipe() {
 
 int Pipe::get_id() const {
     return id;
+}
+
+string Pipe::get_name() const {
+    return name;
 }
 
 string Pipe::get_status() const {
@@ -29,11 +33,11 @@ void Pipe::change_status() {
 istream& operator>> (istream& in, Pipe& p) {
     cout << "\nname: ";
     getline(in, p.name);
-    p.lenght = GetCorrectNumValue<double>("lenght (km): ", 0.0, DBL_MAX,
+    p.lenght = GetCorrectNumValue("lenght (km): ", 0.0, DBL_MAX,
         "**The number must be positive, please repeat\n");
-    p.diameter = GetCorrectNumValue<int>("diameter (mm): ", 0, INT_MAX,
+    p.diameter = GetCorrectNumValue("diameter (mm): ", 0, INT_MAX,
         "**The number must be positive, please repeat\n");
-    p.status = GetCorrectYesNoValue<double>("in repair? (Y/n): ");
+    p.status = GetCorrectYesNoValue<bool>("in repair? (Y/n): ");
     
     return in;
 }
@@ -51,7 +55,6 @@ ostream& operator<< (ostream& out, const Pipe& p) {
 
 ifstream& operator>> (ifstream& fin, Pipe& p) {
     fin >> p.id;
-    fin.ignore();
     getline(fin, p.name);
     fin >> p.lenght;
     fin >> p.diameter;

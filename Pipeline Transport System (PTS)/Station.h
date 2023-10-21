@@ -10,8 +10,12 @@ public:
 	Station();
 
 	int get_id() const;
-	int get_workshop() const;
-	int get_workshop_in_work() const;
+	std::string get_name() const;
+	//int get_workshops() const;
+	//int get_workshops_in_work() const;
+
+	double get_unused() const;
+	std::string get_ratio_workshops_in_work() const;
 
 	void start_workshop();
 	void stop_workshop();

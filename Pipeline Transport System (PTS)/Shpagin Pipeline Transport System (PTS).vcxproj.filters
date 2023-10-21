@@ -21,25 +21,25 @@
     <ClCompile Include="Station.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="Menu.cpp">
+    <ClCompile Include="Shpagin Pipeline Transport System %28PTS%29.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="Shpagin Pipeline Transport System %28PTS%29.cpp">
+    <ClCompile Include="App.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Pipe.h">
-      <Filter>Исходные файлы</Filter>
+    <ClInclude Include="App.h">
+      <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="Utilities.h">
-      <Filter>Исходные файлы</Filter>
+    <ClInclude Include="Pipe.h">
+      <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Station.h">
-      <Filter>Исходные файлы</Filter>
+      <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="Menu.h">
-      <Filter>Исходные файлы</Filter>
+    <ClInclude Include="Utilities.h">
+      <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
