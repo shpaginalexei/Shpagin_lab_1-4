@@ -14,7 +14,8 @@ public:
 	std::string get_name() const;
 	std::string get_status() const;
 
-	void change_status();
+	enum class StatusType { WORK, IN_REPAIR, OPPOSITE, UNKNOWN };
+	void change_status(StatusType);
 
 	friend std::istream& operator>> (std::istream&, Pipe&);
 	friend std::ostream& operator<< (std::ostream&, const Pipe&);

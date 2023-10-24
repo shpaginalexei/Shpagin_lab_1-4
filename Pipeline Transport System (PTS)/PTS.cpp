@@ -1,47 +1,31 @@
-#include "App.h"
-#include "Pipe.h"
-#include "Station.h"
-#include "Utilities.h"
+#include "PTS.h"
+//#include "Pipe.h"
+//#include "Station.h"
+//#include "Utilities.h"
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <set>
-#include <unordered_set>
+//#include <string>
+//#include <set>
+//#include <unordered_set>
 
 using namespace std;
 
 
-bool check_by_name(Pipe& p, string substring) {
+bool check_pipe_by_name(Pipe& p, string substring) {
     return (p.get_name().find(substring) != string::npos);
 }
 
-bool check_by_status(Pipe& p, bool status) {
+bool check_pipe_by_status(Pipe& p, bool status) {
     return (p.status == status);
 }
 
-bool check_by_name(Station& s, string substring) {
+bool check_station_by_name(Station& s, string substring) {
     return (s.get_name().find(substring) != string::npos);
 }
 
-bool check_by_unworking_workshops(Station& s, double perc) {
-    return (s.get_unused() >= perc);
+bool check_station_by_unactive_workshops(Station& s, double perc) {
+    return (s.get_unused_workshops() >= perc);
 }
-
-//bool App::pipes_is_empty() const {
-//    if (pipes.empty()) {
-//        cout << "\n*The system hasn't pipes\n";
-//        return true;
-//    }
-//    return false;
-//}
-//
-//bool App::stations_is_empty() const {
-//    if (stations.empty()) {
-//        cout << "\n*The system hasn't stations\n";
-//        return true;
-//    }
-//    return false;
-//}
 
 //unordered_set<int> App::get_pipes_by_filter() {
 //    if (!pipes_is_empty()) {
@@ -194,38 +178,6 @@ bool check_by_unworking_workshops(Station& s, double perc) {
 //                << " (" << stations.at(id).get_unused() << "% unused)" << endl;
 //        }
 //        cout << "\n";
-//    }
-//}
-
-//void App::add_pipe() {
-//    Pipe p;
-//    cin >> p;
-//    pipes.insert({ p.get_id(), p });
-//    empty = false;
-//    changed = true;
-//}
-//
-//void App::add_station() {
-//    Station s;
-//    cin >> s;
-//    stations.insert({ s.get_id(), s });
-//    empty = false;
-//    changed = true;
-//}
-//
-//void App::view_pipes() const {
-//    if (!pipes_is_empty()) {
-//        for (auto& [id, p] : pipes) {
-//            cout << p;
-//        }
-//    }
-//}
-//
-//void App::view_stations() const {
-//    if (!stations_is_empty()) {
-//        for (auto& [id, s] : stations) {
-//            cout << s;
-//        }
 //    }
 //}
 
@@ -504,52 +456,74 @@ bool check_by_unworking_workshops(Station& s, double perc) {
 //    }
 //}
 
-void App::input_file_name() {
-    cout << "Entry name of the file: ";
-    getline(cin, file_name);
+string to_string(PTS::GroupType group) {
+    switch (group) {
+    case PTS::GroupType::PIPES:    { return "Pipe";    }
+    case PTS::GroupType::STATIONS: { return "Station"; }
+    }
+    return "Unknown";
 }
 
-void App::save_to_file() {
-    if (!changed) {
-        if (saved) {
-            cout << "\n*There are no unsaved changes in the system\n";
-            return;
-        }
-        else if (empty) {
-            cout << "\n*System is empty\n";
-            if (!GetCorrectYesNoValue<bool>("Do you want to save an empty file? (Y/n): ")) {
-                return;
-            }
-            else {
-                cout << "\n";
-                input_file_name();
-            }
-        }
-        else {
-            cout << "?";
-        }
+void PTS::add_to(const GroupType group) {
+    switch (group) {
+    case PIPES: {
+        Pipe p;
+        cin >> p;
+        pipes.insert({ p.get_id(), p });
+        break;
     }
-    else if (saved) {
-        cout << "\n";
-        if (!GetCorrectYesNoValue<bool>("Do you want to save in the same file? (Y/n): ")) {
-            input_file_name();
-        }
+    case STATIONS: {
+        Station s;
+        cin >> s;
+        stations.insert({ s.get_id(), s });
+        break;
     }
-    else if (empty) {
-        cout << "\n*System is empty\n";
-        if (!GetCorrectYesNoValue<bool>("Do you want to save an empty file? (Y/n): ")) {
-            return;
-        }
-        else {
-            cout << "\n";
-            input_file_name();
-        }
     }
-    else {
-        cout << "\n";
-        input_file_name();
-    }
+    empty = false;
+    changed = true;
+}
 
+void PTS::remove_from(const GroupType group, const int ID) {
+    switch (group) {
+    case PIPES:    { pipes.erase(ID); break; }
+    case STATIONS: { stations.erase(ID); break; }
+    }
+    changed = true;
+}
+
+void PTS::view(const GroupType group, const unordered_set<int>& IDs) const {
+    switch (group) {
+    case PIPES:    { for (auto& id : IDs) { cout << pipes.at(id);    } break; }
+    case STATIONS: { for (auto& id : IDs) { cout << stations.at(id); } break; }
+    }
+}
+
+void PTS::short_view(const GroupType group, const unordered_set<int>& IDs) const {
+    switch (group) {
+    case PIPES: {
+        for (auto& id : IDs) {
+            cout << "id::" << id << " | name - " << pipes.at(id).get_name() << " | status - " << pipes.at(id).get_status() << endl;
+        }
+        break;
+    }
+    case STATIONS: {
+        for (auto& id : IDs) {
+            cout << "id::" << id << " | name - " << stations.at(id).get_name() << " | " << stations.at(id).get_ratio_workshops() << endl;
+        }
+        break;
+    }
+    }
+}
+
+unordered_set<int> PTS::get_group_ids(GroupType group) const {
+    switch (group) {
+    case PIPES:    return GetKeys(pipes);
+    case STATIONS: return GetKeys(stations);
+    }
+    return unordered_set<int>{};
+}
+
+void PTS::save_to_file() {
     ofstream file;
     file.open(path + file_name, ios::out);
     if (file.is_open()) {
@@ -563,38 +537,16 @@ void App::save_to_file() {
         for (auto& [id, s] : stations) {
             file << s;
         }
-        cout << "\n     -> " << file_name << "\n" 
-             << count_pipes << " Pipes and " 
+        cout << count_pipes << " Pipes and " 
              << count_stations << " Stations saved successfully!" << endl;
         saved = true;
         changed = false;
     }
-    else {
-        cout << "\n**No such file in directory\n";
-    }
+    else { cout << "\n**No such file in directory\n"; }
     file.close();    
 }
 
-void App::load_from_file() {
-    if (changed) {
-        if (saved) {
-            cout << "\n*There are unsaved changes in the system\n";
-            save_to_file();
-            cout << "\n";
-            input_file_name();
-        }
-        else {
-            cout << "\n*The changes made are new and not saved\n";
-            save_to_file();
-            cout << "\n";
-            input_file_name();
-        }
-    }
-    else {
-        cout << "\n";
-        input_file_name();
-    }
-
+void PTS::load_from_file() {
     ifstream file;
     file.open(path + file_name, ios::in);
     if (file.is_open()) {
@@ -621,15 +573,12 @@ void App::load_from_file() {
                 Station::max_id = new_station.get_id();
         }
 
-        cout << "\n     -> " << file_name << "\n"
-            << count_pipes << " Pipes and "
-            << count_stations << " Stations loaded successfully!" << endl;
+        cout << count_pipes << " Pipes and "
+             << count_stations << " Stations loaded successfully!" << endl;
 
         saved = true;
         changed = false;
     }
-    else {
-        cout << "\n**No such file in directory\n";
-    }
+    else { cout << "\n**No such file in directory\n"; }
     file.close();    
 }

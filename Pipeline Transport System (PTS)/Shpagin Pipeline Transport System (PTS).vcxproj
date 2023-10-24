@@ -129,14 +129,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="Pipe.cpp" />
-    <ClCompile Include="App.cpp" />
+    <ClCompile Include="PTS.cpp" />
     <ClCompile Include="Shpagin Pipeline Transport System %28PTS%29.cpp" />
     <ClCompile Include="Station.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="Pipe.h" />
-    <ClInclude Include="App.h" />
+    <ClInclude Include="PTS.h" />
     <ClInclude Include="Station.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>

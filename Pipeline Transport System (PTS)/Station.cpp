@@ -21,49 +21,55 @@ string Station::get_name() const {
     return name;
 }
 
-//int Station::get_workshops() const {
-//    return workshops;
+double Station::get_unused_workshops() const {
+    return (1.0 - (double)active_workshops / (double)workshops) * 100.0;
+}
+
+string Station::get_ratio_workshops() const {
+    return to_string(active_workshops) + "/" + to_string(workshops) + " active workshops";
+}
+
+//void Station::start_workshop() {
+//    if (0 <= active_workshops && active_workshops < workshops) {
+//        active_workshops++;
+//    }
+//    else {
+//        cout << "id::" << id << " **Failed to start the workshop, all workshops are running\n";
+//    }
 //}
 //
-//int Station::get_workshops_in_work() const {
-//    return workshops_in_work;
+//void Station::stop_workshop() {
+//    if (0 < active_workshops && active_workshops <= workshops) {
+//        active_workshops--;
+//    }
+//    else {
+//        cout << "id::" << id << "**Failed to stop the workshop, all workshops are stopped\n";
+//    }
 //}
 
-double Station::get_unused() const {
-    return (1.0 - (double)workshops_in_work / (double)workshops) * 100.0;
-}
-
-string Station::get_ratio_workshops_in_work() const {
-    return to_string(workshops_in_work) + "/" + to_string(workshops) + " workshops in work";
-}
-
-void Station::start_workshop() {
-    if (0 <= workshops_in_work && workshops_in_work < workshops) {
-        workshops_in_work++;
+void Station::change_num_active_workshops(WhatDo whatDo) {
+    switch (whatDo) {
+    case WhatDo::START: {
+        if (0 <= active_workshops && active_workshops < workshops) { active_workshops++; }
+        return;
     }
-    else {
-        cout << "id::" << id << " **Failed to start the workshop, all workshops are running\n";
+    case WhatDo::STOP: {
+        if (0 < active_workshops && active_workshops <= workshops) { active_workshops--; }
+        return;
     }
-}
-
-void Station::stop_workshop() {
-    if (0 < workshops_in_work && workshops_in_work <= workshops) {
-        workshops_in_work--;
-    }
-    else {
-        cout << "id::" << id << "**Failed to stop the workshop, all workshops are stopped\n";
     }
 }
 
 istream& operator>> (istream& in, Station& s) {
-    cout << "\nname: ";
+    cout << "name: ";
+    in >> ws;
     getline(in, s.name);
-    s.workshops = GetCorrectNumValue("number workshops: ", 0, INT_MAX,
-        "**The number must be positive, please repeat\n");
-    s.workshops_in_work = GetCorrectNumValue("workshops in work: ", -1, s.workshops,
-        "**The number must be in the range 0.." + to_string(s.workshops) + ", please repeat\n");
-    s.efficiency = GetCorrectNumValue("efficiency (%): ", 0.0, 100.0,
-        "**The number must be in the range 0..100, please repeat\n");
+    s.workshops = GetCorrectNumber(in, -1, INT_MAX,
+        "workshops: ", "**The number must be positive, please repeat\n");
+    s.active_workshops = GetCorrectNumber(in, -1, s.workshops + 1,
+        "workshops in work: ", "**The number must be in the range 0.." + to_string(s.workshops) + ", please repeat\n");
+    s.efficiency = GetCorrectNumber(in, 0.0, 100.0,
+        "efficiency (%): ", "**The number must be in the range 0..100, please repeat\n");
 
     return in;
 }
@@ -72,7 +78,7 @@ ostream& operator<< (ostream& out, const Station& s) {
     out << "\n\tStation id::" << s.id << endl
         << "name - " << s.name << endl
         << "workshops - " << s.workshops << endl
-        << "workshops in work - " << s.workshops_in_work << endl
+        << "workshops in work - " << s.active_workshops << endl
         << "efficiency - " << s.efficiency << "%" << endl;
     out << "\n";
 
@@ -81,9 +87,10 @@ ostream& operator<< (ostream& out, const Station& s) {
 
 ifstream& operator>> (ifstream& fin, Station& s) {
     fin >> s.id;
+    fin >> ws;
     getline(fin, s.name);
     fin >> s.workshops;
-    fin >> s.workshops_in_work;
+    fin >> s.active_workshops;
     fin >> s.efficiency;
 
     return fin;
@@ -91,10 +98,10 @@ ifstream& operator>> (ifstream& fin, Station& s) {
 
 ofstream& operator<< (ofstream& fout, const Station& s) {
     fout << s.id << endl
-        << s.name << endl
-        << s.workshops << endl
-        << s.workshops_in_work << endl
-        << s.efficiency << endl;
+         << s.name << endl
+         << s.workshops << endl
+         << s.active_workshops << endl
+         << s.efficiency << endl;
 
     return fout;
 }

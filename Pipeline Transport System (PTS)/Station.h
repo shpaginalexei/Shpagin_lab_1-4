@@ -11,14 +11,11 @@ public:
 
 	int get_id() const;
 	std::string get_name() const;
-	//int get_workshops() const;
-	//int get_workshops_in_work() const;
+	double get_unused_workshops() const;
+	std::string get_ratio_workshops() const;
 
-	double get_unused() const;
-	std::string get_ratio_workshops_in_work() const;
-
-	void start_workshop();
-	void stop_workshop();
+	enum class WhatDo { START, STOP, UNKNOWN };
+	void change_num_active_workshops(WhatDo);
 
 	friend std::istream& operator>> (std::istream&, Station&);
 	friend std::ostream& operator<< (std::ostream&, const Station&);
@@ -30,6 +27,6 @@ private:
 	int id;
 	std::string name = "";
 	int workshops = 0;
-	int workshops_in_work = 0;
+	int active_workshops = 0;
 	double efficiency = 0.0;
 };
