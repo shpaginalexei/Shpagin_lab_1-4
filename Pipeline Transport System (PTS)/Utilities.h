@@ -14,6 +14,7 @@ T GetCorrectNumber(std::istream& in, T min, T max,
     T value;
     while (!correct_answer) {
         std::cout << welcome_message;
+        in >> std::ws;
         in >> value;
         if (std::cin.fail() || std::cin.peek() != '\n') { std::cout << "**Invalid input, please repeat\n"; }
         else if (!(min <= value && value < max))        { std::cout << error_message; }

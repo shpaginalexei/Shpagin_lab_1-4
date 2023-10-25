@@ -62,7 +62,6 @@ ostream& operator<< (ostream& out, const Pipe& p) {
         << "lenght - "     << p.lenght << " km" << endl
         << "diameter - "   << p.diameter << " mm" << endl
         << "status - "     << p.get_status() << endl;
-    out << "\n";
 
     return out;
 }

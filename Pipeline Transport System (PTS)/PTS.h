@@ -11,7 +11,7 @@ class PTS
 {
 public:
 
-	enum GroupType { PIPES, STATIONS };
+	enum GroupType { PIPES, STATIONS, UNKNOWN };
 	void add_to(const GroupType);
 	void remove_from(const GroupType, const int);
 	void view(const GroupType, const std::unordered_set<int>&) const;

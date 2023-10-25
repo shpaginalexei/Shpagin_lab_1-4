@@ -529,20 +529,15 @@ void PTS::save_to_file() {
     if (file.is_open()) {
         size_t count_pipes = pipes.size();
         size_t count_stations = stations.size();
-
         file << count_pipes << " " << count_stations << endl;
-        for (auto& [id, p] : pipes) {
-            file << p;
-        }
-        for (auto& [id, s] : stations) {
-            file << s;
-        }
-        cout << count_pipes << " Pipes and " 
+        for (auto& [id, p] : pipes)    { file << p; }
+        for (auto& [id, s] : stations) { file << s; }
+        cout << file_name << ": " << count_pipes << " Pipes and "
              << count_stations << " Stations saved successfully!" << endl;
         saved = true;
         changed = false;
     }
-    else { cout << "\n**No such file in directory\n"; }
+    else { cout << "**No such file in directory\n"; }
     file.close();    
 }
 
@@ -573,12 +568,12 @@ void PTS::load_from_file() {
                 Station::max_id = new_station.get_id();
         }
 
-        cout << count_pipes << " Pipes and "
+        cout << file_name << ": " << count_pipes << " Pipes and "
              << count_stations << " Stations loaded successfully!" << endl;
 
         saved = true;
         changed = false;
     }
-    else { cout << "\n**No such file in directory\n"; }
+    else { cout << "**No such file in directory\n"; }
     file.close();    
 }

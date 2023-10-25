@@ -5,7 +5,7 @@ using namespace std;
 
 /* ---------------- TASKS ----------------
  - check "CheckBeforeSave" and "CheckBeforeLoad" functions
- - search menu
+ - edir menu.h
  - final code review
  - commit
 */

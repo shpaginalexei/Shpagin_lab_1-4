@@ -80,7 +80,6 @@ ostream& operator<< (ostream& out, const Station& s) {
         << "workshops - " << s.workshops << endl
         << "workshops in work - " << s.active_workshops << endl
         << "efficiency - " << s.efficiency << "%" << endl;
-    out << "\n";
 
     return out;
 }

@@ -5,6 +5,7 @@
 #include "Utilities.h"
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <conio.h>
 
 using namespace std;
@@ -33,18 +34,16 @@ const std::string view_menu[view_menu_size] = {
 "     0. Return"
 };
 
-const int edit_pipe_menu_size = 5;
+const int edit_pipe_menu_size = 4;
 const std::string edit_pipe_menu[edit_pipe_menu_size] = {
-"-> Edit Pipes",
 "     1. Edit Pipe",
 "     2. Banch editing Pipes",
 "     3. Remove Pipe",
 "     0. Return"
 };
 
-const int edit_station_menu_size = 5;
+const int edit_station_menu_size = 4;
 const std::string edit_station_menu[edit_station_menu_size] = {
-"-> Edit Stations",
 "     1. Edit Station",
 "     2. Banch editing Stations",
 "     3. Remove Station",
@@ -77,7 +76,7 @@ void ViewGroup(PTS::GroupType group) {
         << "     -> " << to_string(group) << "s" << endl;
     auto IDs = pts.get_group_ids(group);
     if (!IDs.empty()) { pts.view(group, IDs); }
-    else { cout << "\n*System hasn't " << to_string(group) << "s" << "\n\n"; }
+    else { cout << "*System hasn't " << to_string(group) << "s\n"; }
 }
 
 void ViewMenu() {
@@ -100,6 +99,7 @@ void ViewMenu() {
     case 3:
     {
         ViewGroup(PTS::PIPES);
+        cout << "\n";
         ViewGroup(PTS::STATIONS);
         BackToMenu();
         break;
@@ -140,15 +140,20 @@ void EditObjects(PTS::GroupType group, const unordered_set<int>& IDs) {
 unordered_set<int> SelectSpecificKeys(PTS::GroupType group, const unordered_set<int>& IDs) {
     int select = GetCorrectNumber(cin, 0, 2, "Select (0 - all, 1 - some): ",
         "**The number must be 0 or 1, please repeat\n");
-    if (select == 0) { pts.short_view(group, IDs); return IDs; }
+    if (select == 0) { 
+        pts.short_view(group, IDs); 
+        return IDs; 
+    }
     else {
         unordered_set<int> spec_IDs;
         int id;
         cout << "Select some IDs: ";
-        while (cin.peek() != '\n') {
-            cin >> id;
-            if (cin.fail()) { cin.clear(); cin.ignore(std::numeric_limits<std::streamsize>::max(), ' '); }
-            else if (IDs.contains(id)) { spec_IDs.insert(id); }
+        string s;
+        getline(cin, s);
+        istringstream is(s);
+        while (!is.eof()) {
+            if (is >> id && IDs.contains(id)) { spec_IDs.insert(id); }
+            else { is.clear(); is.ignore(1, ' '); }
         }
         return spec_IDs;
     }
@@ -156,7 +161,8 @@ unordered_set<int> SelectSpecificKeys(PTS::GroupType group, const unordered_set<
 
 unordered_set<int> SearchObjects(PTS::GroupType group) {
     unordered_set<int> IDs;
-    int search = GetCorrectNumber(cin, 0, 3, "Select option (0 - name, 1 - status/% unactive workshops, 2 - all): ",
+    int search = GetCorrectNumber(cin, 0, 3, 
+        "Select option (0 - name, 1 - status/% unactive workshops, 2 - all(no filter)): ",
         "**The number must be in range 0..2, please repeat\n");
     switch (search) {
     case 0: { 
@@ -168,28 +174,26 @@ unordered_set<int> SearchObjects(PTS::GroupType group) {
         case PTS::PIPES:    { IDs = pts.search<PTS::PIPES>(name, check_pipe_by_name);       break; }
         case PTS::STATIONS: { IDs = pts.search<PTS::STATIONS>(name, check_station_by_name); break; }
         }
-        pts.short_view(group, IDs);
-        IDs = SelectSpecificKeys(group, IDs);
         break;
     }
     case 1: {
         switch (group) {
         case PTS::PIPES: {
-            bool status = GetCorrectNumber(cin, 0, 2, "status(1 - work, 0 - in repair): ", "**The number must be 0 or 1, please repeat\n");
+            bool status = GetCorrectNumber(cin, 0, 2, "status(1 - work, 0 - in repair): ", 
+                "**The number must be 0 or 1, please repeat\n");
             IDs = pts.search<PTS::PIPES>(status, check_pipe_by_status);       
             break; 
         }
         case PTS::STATIONS: {
-            double perc = GetCorrectNumber(cin, 0.0, 100.0, "% unactive workshops: ", "**The number must be in range 0..100, please repeat\n");
+            double perc = GetCorrectNumber(cin, 0.0, 100.0, "% unactive workshops: ", 
+                "**The number must be in range 0..100, please repeat\n");
             IDs = pts.search<PTS::STATIONS>(perc, check_station_by_unactive_workshops); 
             break; 
         }
         }
-        pts.short_view(group, IDs);
-        IDs = SelectSpecificKeys(group, IDs);
         break;
     }
-    case 2: { IDs = pts.get_group_ids(group);  break; }
+    case 2: { IDs = pts.get_group_ids(group); break; }
     }
     pts.short_view(group, IDs);
     return IDs;
@@ -204,23 +208,37 @@ void EditOneObject(PTS::GroupType group, bool remove) {
         cout << "id::" << selected_ID << " *No such id exists\n";
         return;
     }
-    if (!remove) { EditObjects(group, { selected_ID }); pts.short_view(group, IDs); }
-    else { pts.remove_from(group, selected_ID); /*cout about remove*/ }
+    if (!remove) { 
+        EditObjects(group, { selected_ID });
+        pts.short_view(group, IDs);
+    }
+    else { 
+        pts.remove_from(group, selected_ID);
+        cout << "id::" << selected_ID << " " << to_string(group) << " was removed\n";
+    }
 }
 
 void BatchEditing(PTS::GroupType group) {
     unordered_set<int> IDs = SearchObjects(group);
-    EditObjects(group, IDs);
-    pts.short_view(group, IDs);
+    IDs = SelectSpecificKeys(group, IDs);
+    if (!IDs.empty()) {
+        pts.short_view(group, IDs);
+        EditObjects(group, IDs);
+        pts.short_view(group, IDs);
+    }
+    else { cout << "*No valid IDs selected\n"; }
 }
 
 void EditMenu(PTS::GroupType group) {
+    cout << "-> Edit " << to_string(group) << "s" << endl;
     auto IDs = pts.get_group_ids(group);
     if (IDs.empty()) {
-        cout << "\n*System hasn't " << to_string(group) << "s" << "\n"; BackToMenu(); return;
+        cout << "*System hasn't " << to_string(group) << "s" << "\n"; 
+        BackToMenu(); 
+        return;
     }
     switch (group) {
-    case PTS::PIPES: { ViewText(edit_pipe_menu, edit_pipe_menu_size); break; }
+    case PTS::PIPES:    { ViewText(edit_pipe_menu, edit_pipe_menu_size);       break; }
     case PTS::STATIONS: { ViewText(edit_station_menu, edit_station_menu_size); break; }
     }
     int view = GetCorrectNumber(cin, 0, 4, ">> ", "**The number must be in the range 0..3, please repeat\n");
@@ -228,21 +246,21 @@ void EditMenu(PTS::GroupType group) {
     switch (view) {
     case 1:
     {
-        cout << "-> Edit " << to_string(group) << endl;
+        cout << "     -> One " << to_string(group) << endl;
         EditOneObject(group, false);
         BackToMenu();
         break;
     }
     case 2:
     {
-        cout << "-> Banch editing " << to_string(group) << "s" << endl;
+        cout << "     -> Banch editing" << endl;
         BatchEditing(group);
         BackToMenu();
         break;
     }
     case 3:
     {
-        cout << "-> Remove " << to_string(group) << endl;
+        cout << "     -> Remove " << to_string(group) << endl;
         EditOneObject(group, true);
         BackToMenu();
         break;
@@ -260,34 +278,33 @@ void InputFileName() {
 
 bool CheckBeforeSave() {
     if (!pts.changed) {
-        if (pts.saved) { cout << "\n*There are no unsaved changes in the system\n"; return false; }
+        if (pts.saved) { cout << "*There are no unsaved changes in the system\n"; return false; }
         else if (pts.empty) {
-            cout << "\n*System is empty\n";
+            cout << "*System is empty\n";
             if (GetCorrectNumber(cin, 0, 2, "Do you want to save an empty file? (1 - yes, 0 - no): ", 
                 "**The enter must be 0 or 1, please repeat\n") == 0) { return false; }
-            else { cout << "\n"; InputFileName(); }
+            else { InputFileName(); }
         }
         else { cout << "?"; return false; }
     }
     else if (pts.saved) {
-        cout << "\n";
         if (GetCorrectNumber(cin, 0, 2, "Do you want to save in the same file? (1 - yes, 0 - no): ",
             "**The enter must be 0 or 1, please repeat\n") == 0) { InputFileName(); }
     }
     else if (pts.empty) {
-        cout << "\n*System is empty\n";
+        cout << "*System is empty\n";
         if (GetCorrectNumber(cin, 0, 2, "Do you want to save an empty file? (1 - yes, 0 - no): ",
             "**The enter must be 0 or 1, please repeat\n") == 0) { return false; }
-        else { cout << "\n"; InputFileName(); }
+        else { InputFileName(); }
     }
-    else { cout << "\n"; InputFileName(); }
+    else { InputFileName(); }
     return true;
 }
 
 bool CheckBeforeLoad() {
     if (pts.changed) {
-        if (pts.saved) { cout << "\n*There are unsaved changes in the system\n"; }
-        else { cout << "\n*The changes made are new and not saved\n"; }
+        if (pts.saved) { cout << "*There are unsaved changes in the system\n"; }
+        else { cout << "*The changes made are new and not saved\n"; }
         if (CheckBeforeSave()) { pts.save_to_file(); InputFileName(); }
         else { return false; }
     }
@@ -299,24 +316,21 @@ void SearchMenu() {
     ViewText(search_menu, search_menu_size);
     int search = GetCorrectNumber(cin, 0, 3, ">> ", "**The number must be in the range 0..2, please repeat\n");
     system("cls");
+    PTS::GroupType group = PTS::UNKNOWN;
     switch (search) {
-    case 1:
-    {
-        cout << "-> Search" << endl
-            << "     -> Pipes" << endl;
-        //
-        break;
-    }
-    case 2:
-    {
-        cout << "-> Search" << endl
-            << "     -> Stations" << endl;
-        //
-        break;
-    }
+    case 1: { group = PTS::PIPES;    break; }
+    case 2: { group = PTS::STATIONS; break; }
     case 0:
-    default: { system("cls"); break; }
+    default: { system("cls"); return; }
     }
+    cout << "-> Search" << endl
+        << "     -> " << to_string(group) << "s" << endl;
+    auto IDs = pts.get_group_ids(group);
+    if (IDs.empty()) {
+        cout << "*System hasn't " << to_string(group) << "s" << "\n";
+    }
+    else { SearchObjects(group); }
+    BackToMenu();
 }
 
 void MainMenu() {
