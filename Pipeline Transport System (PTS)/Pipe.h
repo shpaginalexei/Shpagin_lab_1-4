@@ -5,28 +5,31 @@
 class Pipe
 {
 public:
-	static int max_id;
-	bool status = false;
 
 	Pipe();
 
 	int get_id() const;
 	std::string get_name() const;
-	std::string get_status() const;
+	bool get_status() const;
+	std::string get_status_string() const;
 
-	enum class StatusType { WORK, IN_REPAIR, OPPOSITE, UNKNOWN };
-	void change_status(StatusType);
+	enum EditStatusType { SET_WORK, SET_IN_REPAIR, SET_OPPOSITE };
+	void change_status(const EditStatusType);
 
 	friend std::istream& operator>> (std::istream&, Pipe&);
 	friend std::ostream& operator<< (std::ostream&, const Pipe&);
 
 	friend std::ifstream& operator>> (std::ifstream&, Pipe&);
 	friend std::ofstream& operator<< (std::ofstream&, const Pipe&);
+
+	friend class PTS;
 	
 private:
+	static int max_id;
 	int id;
 	std::string name = "";
 	double lenght = 0;
-	int diameter = 0;	
+	int diameter = 0;
+	bool status = false;
 };
 

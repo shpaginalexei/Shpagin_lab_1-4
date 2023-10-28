@@ -28,15 +28,16 @@ T GetCorrectNumber(std::istream& in, T min, T max,
 template <typename T>
 std::unordered_set<int> GetKeys(const std::unordered_map<int, T>& group) {
     std::unordered_set<int> Keys;
-    for (auto& [key, value] : group) { Keys.insert(key); }
+    for (auto& [key, value] : group) 
+        Keys.insert(key); 
     return Keys;
 }
 
 template<typename T1, typename T2>
-using filter = bool (*) (T1& obj, T2 par);
+using filter = bool (*) (const T1& obj, const T2 par);
 
 template<typename T1, typename T2>
-std::unordered_set<int> search_by_filter(std::unordered_map<int, T1>& group, filter<T1, T2> f, const T2 par) {
+std::unordered_set<int> search_by_filter(const std::unordered_map<int, T1>& group, filter<T1, T2> f, const T2 par) {
     std::unordered_set<int> IDs;
     for (auto& [id, obj] : group) {
         if (f(obj, par)) { IDs.insert(id); }

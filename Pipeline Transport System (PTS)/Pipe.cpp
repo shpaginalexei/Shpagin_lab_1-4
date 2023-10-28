@@ -22,24 +22,20 @@ string Pipe::get_name() const {
     return name;
 }
 
-string Pipe::get_status() const {
+bool Pipe::get_status() const {
+    return status;
+}
+
+string Pipe::get_status_string() const {
     return status ? "work" : "in repair";
 }
 
-void Pipe::change_status(StatusType type) {
+void Pipe::change_status(const EditStatusType type) {
     switch (type) {
-    case StatusType::WORK: {
-        status = true;
-        return;
-    }
-    case StatusType::IN_REPAIR: {
-        status = false;
-        return;
-    }
-    case StatusType::OPPOSITE: {
-        status = !status;
-        return;
-    }
+    case SET_WORK:      { status = true;    return; }
+    case SET_IN_REPAIR: { status = false;   return; }
+    case SET_OPPOSITE:  { status = !status; return; }
+    default:            {                   return; }
     }
 }
 
@@ -61,8 +57,7 @@ ostream& operator<< (ostream& out, const Pipe& p) {
         << "name - "       << p.name << endl
         << "lenght - "     << p.lenght << " km" << endl
         << "diameter - "   << p.diameter << " mm" << endl
-        << "status - "     << p.get_status() << endl;
-
+        << "status - "     << p.get_status_string() << endl;
     return out;
 }
 
@@ -73,7 +68,8 @@ ifstream& operator>> (ifstream& fin, Pipe& p) {
     fin >> p.lenght;
     fin >> p.diameter;
     fin >> p.status;
-
+    Pipe::max_id = 0;
+    Pipe::max_id = (Pipe::max_id < p.id) ? p.id : Pipe::max_id;
     return fin;
 }
 
@@ -83,6 +79,5 @@ ofstream& operator<< (ofstream& fout, const Pipe& p) {
          << p.lenght << endl
          << p.diameter << endl
          << p.status << endl;
-
     return fout;
 }

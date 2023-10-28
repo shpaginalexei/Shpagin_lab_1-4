@@ -4,35 +4,35 @@
 #include "Utilities.h"
 #include <string>
 #include <unordered_map>
-#include <type_traits>
 
 
 class PTS
 {
 public:
 
-	enum GroupType { PIPES, STATIONS, UNKNOWN };
-	void add_to(const GroupType);
-	void remove_from(const GroupType, const int);
-	void view(const GroupType, const std::unordered_set<int>&) const;
-	void short_view(const GroupType, const std::unordered_set<int>&) const;
+	enum ObjectType { PIPE, STATION };
+	std::string to_string(const ObjectType) const;
+	void add(const ObjectType);
+	void remove(const ObjectType, const int);
+	void view(const ObjectType, const std::unordered_set<int>&) const;
+	void short_view(const ObjectType, const std::unordered_set<int>&) const;
 
-	template <PTS::GroupType type, typename T>
-	void edit(const std::unordered_set<int>&, const T, std::enable_if_t<type == PIPES>* = nullptr);
-	template <PTS::GroupType type, typename T>
-	void edit(const std::unordered_set<int>&, const T, std::enable_if_t<type == STATIONS>* = nullptr);
+	void edit(const std::unordered_set<int>&, const Pipe::EditStatusType);
+	void edit(const std::unordered_set<int>&, const Station::EditWSType);
 
-	template <PTS::GroupType type, typename T2>
-	std::unordered_set<int> search(const T2, filter<Pipe, T2>, std::enable_if_t<type == PIPES>* = nullptr);
-	template <PTS::GroupType type, typename T2>
-	std::unordered_set<int> search(const T2, filter<Station, T2>, std::enable_if_t<type == STATIONS>* = nullptr);
+	template <typename T>
+	std::unordered_set<int> search(filter<Pipe, T>, const T) const;
+	template <typename T>
+	std::unordered_set<int> search(filter<Station, T>, const T) const;
 
-	std::unordered_set<int> get_group_ids(GroupType) const;
+	std::unordered_set<int> get_ids_objects(const ObjectType) const;
 
-	bool empty = true;
+	bool empty() { return pipes.size() == 0 && stations.size() == 0; }
+	bool saved() { return file_name != ""; }
 	bool changed = false;
-	bool saved = false;
 	std::string file_name = "";
+
+	void clear_system();
 
 	void save_to_file();
 	void load_from_file();
@@ -43,33 +43,17 @@ private:
 	const std::string path = ".saves\\";
 };
 
-std::string to_string(PTS::GroupType);
+bool check_pipe_by_name(const Pipe&, const std::string);
+bool check_pipe_by_status(const Pipe&, const bool);
+bool check_station_by_name(const Station&, const std::string);
+bool check_station_by_unactive_workshops(const Station&, const double);
 
-bool check_pipe_by_name(Pipe&, std::string);
-bool check_pipe_by_status(Pipe&, bool);
-bool check_station_by_name(Station&, std::string);
-bool check_station_by_unactive_workshops(Station&, double);
-
-template<PTS::GroupType type, typename T>
-void PTS::edit(const std::unordered_set<int>& IDs, const T editType, std::enable_if_t<type == PIPES>*) {
-	for (auto& id : IDs) { pipes.at(id).change_status(editType); }
-	changed = true;
-}
-
-template<PTS::GroupType type, typename T>
-void PTS::edit(const std::unordered_set<int>& IDs, const T editType, std::enable_if_t<type == STATIONS>*) {
-	for (auto& id : IDs) { stations.at(id).change_num_active_workshops(editType); }
-	changed = true;
-}
-
-template <PTS::GroupType type, typename T2>
-std::unordered_set<int> PTS::search(const T2 par, filter<Pipe, T2> f,
-	std::enable_if_t<type == PIPES>*) {
+template <typename T>
+std::unordered_set<int> PTS::search(filter<Pipe, T> f, const T par) const {
 	return search_by_filter(pipes, f, par);
 }
 
-template <PTS::GroupType type, typename T2>
-std::unordered_set<int> PTS::search(const T2 par, filter<Station, T2> f,
-	std::enable_if_t<type == STATIONS>*) {
+template <typename T>
+std::unordered_set<int> PTS::search(filter<Station, T> f, const T par) const {
 	return search_by_filter(stations, f, par);
 }
