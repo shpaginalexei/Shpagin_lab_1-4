@@ -126,8 +126,8 @@ unordered_set<int> PTS::get_ids_objects(const ObjectType obj) const {
 void PTS::clear_system() {
     pipes.clear();
     stations.clear();
-    Pipe::max_id = 0;
-    Station::max_id = 0;
+    Pipe::reset_max_id();
+    Station::reset_max_id();
     changed = false;
     //file_name = "";
 }

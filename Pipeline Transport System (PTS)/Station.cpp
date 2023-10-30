@@ -9,6 +9,10 @@ using namespace std;
 
 int Station::max_id = 0;
 
+void Station::reset_max_id() {
+    max_id = 0;
+}
+
 Station::Station() {
     id = ++max_id;
 }
@@ -79,7 +83,6 @@ ifstream& operator>> (ifstream& fin, Station& s) {
     fin >> s.workshops;
     fin >> s.active_workshops;
     fin >> s.efficiency;
-    Station::max_id = 0;
     Station::max_id = (Station::max_id < s.id) ? s.id : Station::max_id;
     return fin;
 }

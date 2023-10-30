@@ -119,9 +119,15 @@ unordered_set<int> SearchByName(PTS& pts, const PTS::ObjectType obj) {
     cin >> ws;
     getline(cin, name);
     switch (obj) {
-    case PTS::PIPE:    { return pts.search(check_pipe_by_name,    name); }
-    case PTS::STATION: { return pts.search(check_station_by_name, name); }
-    default:           { return unordered_set<int>{}; }
+    case PTS::PIPE: { 
+        return pts.search(check_pipe_by_name, name);
+    }
+    case PTS::STATION: { 
+        return pts.search(check_station_by_name, name);
+    }
+    default: { 
+        return unordered_set<int>{};
+    }
     }
 }
 
@@ -358,6 +364,8 @@ bool CheckBeforeLoad(PTS& pts) {
             cout << "*The changes made are new and not saved\n";
             if (GetCorrectNumber(cin, 0, 2, "Do you want to save changes to file? (1 - yes, 0 - no): ",
                 "**The enter must be 0 or 1, please repeat\n") == 0) {
+                cout << "*Data was lost\n";
+                InputFileName(pts);
                 return true;
             }
             else {

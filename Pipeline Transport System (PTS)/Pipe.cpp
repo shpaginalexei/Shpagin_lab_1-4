@@ -10,6 +10,10 @@ using namespace std;
 
 int Pipe::max_id = 0;
 
+void Pipe::reset_max_id() {
+    max_id = 0;
+}
+
 Pipe::Pipe() {
     id = ++max_id;
 }
@@ -68,7 +72,6 @@ ifstream& operator>> (ifstream& fin, Pipe& p) {
     fin >> p.lenght;
     fin >> p.diameter;
     fin >> p.status;
-    Pipe::max_id = 0;
     Pipe::max_id = (Pipe::max_id < p.id) ? p.id : Pipe::max_id;
     return fin;
 }

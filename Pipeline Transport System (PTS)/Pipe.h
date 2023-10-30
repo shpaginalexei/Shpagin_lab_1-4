@@ -8,6 +8,8 @@ public:
 
 	Pipe();
 
+	static void reset_max_id();
+
 	int get_id() const;
 	std::string get_name() const;
 	bool get_status() const;
@@ -22,8 +24,6 @@ public:
 	friend std::ifstream& operator>> (std::ifstream&, Pipe&);
 	friend std::ofstream& operator<< (std::ofstream&, const Pipe&);
 
-	friend class PTS;
-	
 private:
 	static int max_id;
 	int id;

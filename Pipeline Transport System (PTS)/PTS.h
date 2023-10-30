@@ -32,12 +32,13 @@ public:
 	bool changed = false;
 	std::string file_name = "";
 
-	void clear_system();
-
 	void save_to_file();
 	void load_from_file();
 
 private:
+
+	void clear_system();
+
 	std::unordered_map<int, Pipe> pipes{};
 	std::unordered_map<int, Station> stations{};
 	const std::string path = ".saves\\";

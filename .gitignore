@@ -399,3 +399,6 @@ FodyWeavers.xsd
 
 # Saves folder
 .saves/
+
+# Log folder
+.logs/

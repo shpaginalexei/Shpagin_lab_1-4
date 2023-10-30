@@ -7,6 +7,8 @@ class Station
 public:
 	
 	Station();
+	
+	static void reset_max_id();
 
 	int get_id() const;
 	std::string get_name() const;
@@ -21,8 +23,6 @@ public:
 
 	friend std::ifstream& operator>> (std::ifstream&, Station&);
 	friend std::ofstream& operator<< (std::ofstream&, const Station&);
-
-	friend class PTS;
 
 private:
 	static int max_id;
