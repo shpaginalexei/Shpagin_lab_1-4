@@ -12,7 +12,8 @@ using namespace chrono;
 int main() {
     filesystem::create_directory(".logs\\"); // create dir for logs
 	redirect_output_wrapper cerr_out(cerr);
-	string time = format("{:%d_%m_%Y %H_%M_%OS}", system_clock::now());
+    zoned_time now{ current_zone(), system_clock::now() }; // GMT+3 "Europe/Moscow"
+	string time = format("{:%d_%m_%Y %H_%M_%OS}", now);
 	ofstream logfile(".logs\\" + time + ".log");
 	if (logfile) {
 		cerr_out.redirect(logfile);
