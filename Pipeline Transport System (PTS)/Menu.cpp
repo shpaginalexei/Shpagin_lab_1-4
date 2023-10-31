@@ -11,7 +11,7 @@
 using namespace std;
 
 
-void ViewText(const string menu[], const int size) {
+void Print(const string menu[], const int size) {
     for (size_t i{}; i < size; i++) {
         cout << menu[i] << endl;
     }
@@ -53,7 +53,7 @@ void ViewMenu(PTS& pts) {
     "     3. View All",
     "     0. Return"
     };
-    ViewText(view_menu, view_menu_size);
+    Print(view_menu, view_menu_size);
     int view = GetCorrectNumber(cin, 0, 4, ">> ", "**The number must be in the range 0..3, please repeat\n");
     system("cls");
     switch (view) {
@@ -105,7 +105,7 @@ unordered_set<int> SelectSpecificIDs(const unordered_set<int>& IDs) {
             if (is >> id && IDs.contains(id)) { spec_IDs.insert(id); }
             else { is.clear(); is.ignore(1, ' '); }
         }
-
+        std::cerr << s << std::endl;
         return spec_IDs;
     }
     case 0: 
@@ -116,8 +116,7 @@ unordered_set<int> SelectSpecificIDs(const unordered_set<int>& IDs) {
 unordered_set<int> SearchByName(PTS& pts, const PTS::ObjectType obj) {
     cout << "name: ";
     string name;
-    cin >> ws;
-    getline(cin, name);
+    InputLine(cin, name);
     switch (obj) {
     case PTS::PIPE: { 
         return pts.search(check_pipe_by_name, name);
@@ -183,9 +182,15 @@ unordered_set<int> SearchStations(PTS& pts) {
 
 unordered_set<int> SearchObjects(PTS& pts, const PTS::ObjectType obj) {
     switch (obj) {
-    case PTS::PIPE:    { return SearchPipes(pts);     }
-    case PTS::STATION: { return SearchStations(pts);  }
-    default:           { return unordered_set<int>{}; }
+    case PTS::PIPE: { 
+        return SearchPipes(pts);
+    }
+    case PTS::STATION: { 
+        return SearchStations(pts);
+    }
+    default: { 
+        return unordered_set<int>{};
+    }
     }
 }
 
@@ -237,15 +242,15 @@ void EditOneObject(PTS& pts, const PTS::ObjectType obj, bool remove = false) {
 }
 
 void BatchEditing(PTS& pts, const PTS::ObjectType obj) {
-    auto all_IDs = SearchObjects(pts, obj);
-    pts.short_view(obj, all_IDs);
+    auto IDs = SearchObjects(pts, obj);
+    pts.short_view(obj, IDs);
 
-    all_IDs = SelectSpecificIDs(all_IDs);
-    pts.short_view(obj, all_IDs);
-
-    if (!all_IDs.empty()) {
-        Edit(pts, obj, all_IDs);
-        pts.short_view(obj, all_IDs);
+    IDs = SelectSpecificIDs(IDs);
+    
+    if (!IDs.empty()) {
+        pts.short_view(obj, IDs);
+        Edit(pts, obj, IDs);
+        pts.short_view(obj, IDs);
     }
     else { cout << "*No valid IDs selected\n"; }
 }
@@ -265,7 +270,7 @@ void EditMenu(PTS& pts, const PTS::ObjectType obj) {
     "     3. Remove " + pts.to_string(obj),
     "     0. Return"
     };
-    ViewText(edit_menu, edit_menu_size);
+    Print(edit_menu, edit_menu_size);
     int view = GetCorrectNumber(cin, 0, 4, ">> ", "**The number must be in the range 0..3, please repeat\n");
     system("cls");
     cout << "-> Edit " << pts.to_string(obj) << "s" << endl;
@@ -303,8 +308,7 @@ void EditMenu(PTS& pts, const PTS::ObjectType obj) {
 
 void InputFileName(PTS& pts) {
     cout << "Entry name of the file: ";
-    cin >> ws;
-    getline(cin, pts.file_name);
+    InputLine(cin, pts.file_name);
 }
 
 bool CheckBeforeSave(PTS& pts) {
@@ -376,80 +380,4 @@ bool CheckBeforeLoad(PTS& pts) {
     }
     InputFileName(pts);
     return true;
-}
-
-void MainMenu(PTS& pts) {
-    const int main_menu_size = 9;
-    const std::string main_menu[main_menu_size] = {
-    "1. Add Pipe",
-    "2. Add Station",
-    "3. View Objects",
-    "4. Edit Pipes",
-    "5. Edit Stations",
-    "6. Save",
-    "7. Load",
-    "0. Exit"
-    };
-    while (true) {
-        ViewText(main_menu, main_menu_size);
-        int menu = GetCorrectNumber(cin, 0, 8, ">> ", "**The number must be in the range 0..8, please repeat\n");
-        system("cls");
-        switch (menu) {
-        case 1:
-        {
-            cout << "-> Add Pipe" << endl;
-            pts.add(PTS::PIPE);
-            BackToMenu();
-            break;
-        }
-        case 2:
-        {
-            cout << "-> Add Station" << endl;
-            pts.add(PTS::STATION);
-            BackToMenu();
-            break;
-        }
-        case 3:
-        {
-            ViewMenu(pts);
-            break;
-        }
-        case 4:
-        {
-            EditMenu(pts, PTS::PIPE);
-            break;
-        }
-        case 5:
-        {
-            EditMenu(pts, PTS::STATION);
-            break;
-        }
-        case 6:
-        {
-            cout << "-> Save" << endl;
-
-            if (CheckBeforeSave(pts)) { 
-                pts.save_to_file(); 
-            }
-            BackToMenu();
-            break;
-        }
-        case 7:
-        {
-            cout << "-> Load" << endl;
-
-            if (CheckBeforeLoad(pts)) { 
-                pts.load_from_file();
-            }
-            BackToMenu();
-            break;
-        }
-        case 0:
-        default: 
-        { 
-            system("cls"); 
-            return; 
-        }
-        }
-    }
 }

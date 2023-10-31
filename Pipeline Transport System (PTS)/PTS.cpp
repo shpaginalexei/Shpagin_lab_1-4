@@ -25,7 +25,7 @@ string PTS::to_string(const PTS::ObjectType obj) const {
     switch (obj) {
     case PIPE:    { return "Pipe";    }
     case STATION: { return "Station"; }
-    default:      { return ""; }
+    default:      { return "Unknown"; }
     }
 }
 
@@ -119,7 +119,7 @@ unordered_set<int> PTS::get_ids_objects(const ObjectType obj) const {
     switch (obj) {
     case PIPE:    { return GetKeys(pipes);       }
     case STATION: { return GetKeys(stations);    }
-    default :     { return unordered_set<int>{}; }
+    default:      { return unordered_set<int>{}; }
     }
 }
 
@@ -129,7 +129,6 @@ void PTS::clear_system() {
     Pipe::reset_max_id();
     Station::reset_max_id();
     changed = false;
-    //file_name = "";
 }
 
 void PTS::save_to_file() {
@@ -164,8 +163,8 @@ void PTS::load_from_file() {
     if (file.is_open()) {
         Pipe new_pipe;
         Station new_station;
-        int count_pipes = 0;
-        int count_stations = 0;
+        int count_pipes;
+        int count_stations;
 
         file >> count_pipes >> count_stations;
         for (int i = 0; i < count_pipes; i++) {

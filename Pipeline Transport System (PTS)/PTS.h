@@ -31,6 +31,7 @@ public:
 	bool saved() { return file_name != ""; }
 	bool changed = false;
 	std::string file_name = "";
+	void set_save_path(const std::string savepath) { path = savepath; }
 
 	void save_to_file();
 	void load_from_file();
@@ -41,7 +42,7 @@ private:
 
 	std::unordered_map<int, Pipe> pipes{};
 	std::unordered_map<int, Station> stations{};
-	const std::string path = ".saves\\";
+	std::string path = "";
 };
 
 bool check_pipe_by_name(const Pipe&, const std::string);

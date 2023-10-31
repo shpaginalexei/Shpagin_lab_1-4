@@ -7,6 +7,26 @@
 #include <unordered_set>
 
 
+#define InputLine(in, str) std::getline(in>>std::ws, str); \
+                           std::cerr << str << std::endl;
+
+class redirect_output_wrapper
+{
+private:
+    std::ostream& stream;
+    std::streambuf* const old_buf;
+public:
+    redirect_output_wrapper(std::ostream& src)
+        :old_buf(src.rdbuf()), stream(src) {
+    }
+    ~redirect_output_wrapper() {
+        stream.rdbuf(old_buf);
+    }
+    void redirect(std::ostream& dest) {
+        stream.rdbuf(dest.rdbuf());
+    }
+};
+
 template <typename T>
 T GetCorrectNumber(std::istream& in, T min, T max,
     const std::string welcome_message, const std::string error_message) {
@@ -22,6 +42,7 @@ T GetCorrectNumber(std::istream& in, T min, T max,
         in.clear();
         in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
+    std::cerr << value << std::endl;
     return value;
 }
 

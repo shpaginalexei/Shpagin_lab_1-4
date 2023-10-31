@@ -45,8 +45,7 @@ void Pipe::change_status(const EditStatusType type) {
 
 istream& operator>> (istream& in, Pipe& p) {
     cout << "name: ";
-    in >> ws;
-    getline(in, p.name);
+    InputLine(in, p.name);
     p.lenght = GetCorrectNumber(in, 0.000001, DBL_MAX,
         "lenght (km): ", "**The number must be positive, please repeat\n");
     p.diameter = GetCorrectNumber(in, 1, INT_MAX,
