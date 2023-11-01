@@ -4,7 +4,6 @@
 #include "Log.h"
 #include <iostream>
 #include <string>
-#include <conio.h>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -13,6 +12,8 @@ extern redirect_input_wrapper cin_in;
 
 
 void InputLine(std::istream&, std::string&);
+
+std::unordered_set<int> SelectIDs(std::istream&, const std::unordered_set<int>&);
 
 template <typename T>
 T GetCorrectNumber(std::istream& in, T min, T max,

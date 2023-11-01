@@ -92,20 +92,8 @@ unordered_set<int> SelectSpecificIDs(const unordered_set<int>& IDs) {
     switch (select) {
     case 1:
     {
-        unordered_set<int> spec_IDs;
-
-        // GetCorrectKeys
-
-        int id;
-        cout << "Select some IDs: ";
-        string s;
-        getline(cin, s);
-        istringstream is(s);
-        while (!is.eof()) {
-            if (is >> id && IDs.contains(id)) { spec_IDs.insert(id); }
-            else { is.clear(); is.ignore(1, ' '); }
-        }
-        std::cerr << s << std::endl;
+        cout << "Select IDs ('#' - end, ' ' - sep): ";
+        auto spec_IDs = SelectIDs(cin, IDs);
         return spec_IDs;
     }
     case 0: 
@@ -246,7 +234,7 @@ void BatchEditing(PTS& pts, const PTS::ObjectType obj) {
     pts.short_view(obj, IDs);
 
     IDs = SelectSpecificIDs(IDs);
-    
+
     if (!IDs.empty()) {
         pts.short_view(obj, IDs);
         Edit(pts, obj, IDs);
