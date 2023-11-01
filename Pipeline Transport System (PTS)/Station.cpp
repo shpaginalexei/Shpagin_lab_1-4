@@ -58,7 +58,7 @@ istream& operator>> (istream& in, Station& s) {
     InputLine(in, s.name);
     s.workshops = GetCorrectNumber(in, 1, INT_MAX,
         "workshops: ", "**The number must be greater than 1, please repeat\n");
-    s.active_workshops = GetCorrectNumber(in, 0, s.workshops + 1,
+    s.active_workshops = GetCorrectNumber(in, 0, s.workshops,
         "workshops in work: ", "**The number must be in the range 0.." + to_string(s.workshops) + ", please repeat\n");
     s.efficiency = GetCorrectNumber(in, 0.0, 100.0,
         "efficiency (%): ", "**The number must be in the range 0..100, please repeat\n");

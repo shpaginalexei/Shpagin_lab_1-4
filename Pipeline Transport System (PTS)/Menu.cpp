@@ -54,7 +54,7 @@ void ViewMenu(PTS& pts) {
     "     0. Return"
     };
     Print(view_menu, view_menu_size);
-    int view = GetCorrectNumber(cin, 0, 4, ">> ", "**The number must be in the range 0..3, please repeat\n");
+    int view = GetCorrectNumber(cin, 0, 3, ">> ", "**The number must be in the range 0..3, please repeat\n");
     system("cls");
     switch (view) {
     case 1:
@@ -87,7 +87,7 @@ void ViewMenu(PTS& pts) {
 }
 
 unordered_set<int> SelectSpecificIDs(const unordered_set<int>& IDs) {
-    int select = GetCorrectNumber(cin, 0, 2, "Select (0 - all, 1 - some): ",
+    int select = GetCorrectNumber(cin, 0, 1, "Select (0 - all, 1 - some): ",
         "**The number must be 0 or 1, please repeat\n");
     switch (select) {
     case 1:
@@ -132,7 +132,7 @@ unordered_set<int> SearchByName(PTS& pts, const PTS::ObjectType obj) {
 
 unordered_set<int> SearchPipes(PTS& pts) {
     unordered_set<int> IDs;
-    int search = GetCorrectNumber(cin, 0, 3, "Select option (0 - name, 1 - status, 2 - all(no filter)): ",
+    int search = GetCorrectNumber(cin, 0, 2, "Select option (0 - name, 1 - status, 2 - all(no filter)): ",
         "**The number must be in range 0..2, please repeat\n");
     switch (search) {
     case 0: 
@@ -142,7 +142,7 @@ unordered_set<int> SearchPipes(PTS& pts) {
     }
     case 1: 
     {
-        bool status = GetCorrectNumber(cin, 0, 2, "status(1 - work, 0 - in repair): ", "**The number must be 0 or 1, please repeat\n");
+        bool status = GetCorrectNumber(cin, 0, 1, "status(1 - work, 0 - in repair): ", "**The number must be 0 or 1, please repeat\n");
         IDs = pts.search(check_pipe_by_status, status);
         break;
     }
@@ -157,7 +157,7 @@ unordered_set<int> SearchPipes(PTS& pts) {
 
 unordered_set<int> SearchStations(PTS& pts) {
     unordered_set<int> IDs;
-    int search = GetCorrectNumber(cin, 0, 3, "Select option (0 - name, 1 - % unactive workshops, 2 - all(no filter)): ",
+    int search = GetCorrectNumber(cin, 0, 2, "Select option (0 - name, 1 - % unactive workshops, 2 - all(no filter)): ",
         "**The number must be in range 0..2, please repeat\n");
     switch (search) {
     case 0:
@@ -198,7 +198,7 @@ void Edit(PTS& pts, const PTS::ObjectType obj, const unordered_set<int>& IDs) {
     switch (obj) {
     case PTS::PIPE:
     {
-        int edit = GetCorrectNumber(cin, 0, 3, "Select option (1 - work, 0 - in repair, 2 - opposite): ",
+        int edit = GetCorrectNumber(cin, 0, 2, "Select option (1 - work, 0 - in repair, 2 - opposite): ",
             "**The number must be in range 0..2, please repeat\n");
 
         switch (edit) {
@@ -210,7 +210,7 @@ void Edit(PTS& pts, const PTS::ObjectType obj, const unordered_set<int>& IDs) {
     }
     case PTS::STATION:
     {
-        int edit = GetCorrectNumber(cin, 0, 2, "Select option (1 - start workshop, 0 - stop workshop): ",
+        int edit = GetCorrectNumber(cin, 0, 1, "Select option (1 - start workshop, 0 - stop workshop): ",
             "**The number must be in range 0 or 1, please repeat\n");
 
         switch (edit) {
@@ -271,7 +271,7 @@ void EditMenu(PTS& pts, const PTS::ObjectType obj) {
     "     0. Return"
     };
     Print(edit_menu, edit_menu_size);
-    int view = GetCorrectNumber(cin, 0, 4, ">> ", "**The number must be in the range 0..3, please repeat\n");
+    int view = GetCorrectNumber(cin, 0, 3, ">> ", "**The number must be in the range 0..3, please repeat\n");
     system("cls");
     cout << "-> Edit " << pts.to_string(obj) << "s" << endl;
 
@@ -319,7 +319,7 @@ bool CheckBeforeSave(PTS& pts) {
         }
         else if (pts.empty()) {
             cout << "*System is empty\n";
-            if (GetCorrectNumber(cin, 0, 2, "Do you want to save an empty file? (1 - yes, 0 - no): ", 
+            if (GetCorrectNumber(cin, 0, 1, "Do you want to save an empty file? (1 - yes, 0 - no): ", 
                 "**The enter must be 0 or 1, please repeat\n") == 0) { 
                 return false; 
             }
@@ -331,7 +331,7 @@ bool CheckBeforeSave(PTS& pts) {
         else { cout << "\n?\n"; return false; }
     }
     else if (pts.saved()) {
-        if (GetCorrectNumber(cin, 0, 2, "Do you want to save in the same file? (1 - yes, 0 - no): ",
+        if (GetCorrectNumber(cin, 0, 1, "Do you want to save in the same file? (1 - yes, 0 - no): ",
             "**The enter must be 0 or 1, please repeat\n") == 0) { 
             InputFileName(pts);
         }
@@ -339,7 +339,7 @@ bool CheckBeforeSave(PTS& pts) {
     }
     else if (pts.empty()) {
         cout << "*System is empty\n";
-        if (GetCorrectNumber(cin, 0, 2, "Do you want to save an empty file? (1 - yes, 0 - no): ",
+        if (GetCorrectNumber(cin, 0, 1, "Do you want to save an empty file? (1 - yes, 0 - no): ",
             "**The enter must be 0 or 1, please repeat\n") == 0) { 
             return false; 
         }
@@ -358,7 +358,7 @@ bool CheckBeforeLoad(PTS& pts) {
     if (pts.changed) {
         if (pts.saved()) {
             cout << "*There are unsaved changes in the system\n";
-            if (GetCorrectNumber(cin, 0, 2, "Do you want to save in the same file? (1 - yes, 0 - no): ",
+            if (GetCorrectNumber(cin, 0, 1, "Do you want to save in the same file? (1 - yes, 0 - no): ",
                 "**The enter must be 0 or 1, please repeat\n") == 0) {
                 InputFileName(pts);
             }
@@ -366,7 +366,7 @@ bool CheckBeforeLoad(PTS& pts) {
         }
         else {
             cout << "*The changes made are new and not saved\n";
-            if (GetCorrectNumber(cin, 0, 2, "Do you want to save changes to file? (1 - yes, 0 - no): ",
+            if (GetCorrectNumber(cin, 0, 1, "Do you want to save changes to file? (1 - yes, 0 - no): ",
                 "**The enter must be 0 or 1, please repeat\n") == 0) {
                 cout << "*Data was lost\n";
                 InputFileName(pts);

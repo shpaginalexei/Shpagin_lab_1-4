@@ -1,31 +1,18 @@
 #pragma once
 #include "Pipe.h"
 #include "Station.h"
+#include "Log.h"
 #include <iostream>
 #include <string>
+#include <conio.h>
 #include <unordered_map>
 #include <unordered_set>
 
 
-#define InputLine(in, str) std::getline(in>>std::ws, str); \
-                           std::cerr << str << std::endl;
+extern redirect_input_wrapper cin_in;
 
-class redirect_output_wrapper
-{
-private:
-    std::ostream& stream;
-    std::streambuf* const old_buf;
-public:
-    redirect_output_wrapper(std::ostream& src)
-        :old_buf(src.rdbuf()), stream(src) {
-    }
-    ~redirect_output_wrapper() {
-        stream.rdbuf(old_buf);
-    }
-    void redirect(std::ostream& dest) {
-        stream.rdbuf(dest.rdbuf());
-    }
-};
+
+void InputLine(std::istream&, std::string&);
 
 template <typename T>
 T GetCorrectNumber(std::istream& in, T min, T max,
@@ -34,11 +21,29 @@ T GetCorrectNumber(std::istream& in, T min, T max,
     T value;
     while (!correct_answer) {
         std::cout << welcome_message;
-        in >> std::ws;
-        in >> value;
-        if (std::cin.fail() || std::cin.peek() != '\n') { std::cout << "**Invalid input, please repeat\n"; }
-        else if (!(min <= value && value < max))        { std::cout << error_message; }
-        else                                            { correct_answer = true; }
+
+        if (in.peek() == '\n' || in.peek() == EOF) {
+            cin_in.redirect_back();
+            std::cout << std::string(welcome_message.size(), '\b');
+            continue;
+        }
+        else {
+            in >> std::ws;
+            in >> value;
+        }
+        if (cin_in.redirected) {
+            std::cout << value << std::endl;
+        }
+
+        if (std::cin.fail() || std::cin.peek() != '\n') { 
+            std::cout << "**Invalid input, please repeat\n";
+        }
+        else if (!(min <= value && value <= max)) { 
+            std::cout << error_message;
+        }
+        else { 
+            correct_answer = true;
+        }
         in.clear();
         in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }

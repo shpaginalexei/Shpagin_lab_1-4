@@ -1,31 +1,22 @@
 #include "PTS.h"
 #include "Menu.h"
+#include "Log.h"
 #include <filesystem>
 #include <fstream>
 #include <chrono>
 #include <format>
 
+#include <conio.h>
+
 using namespace std;
 using namespace chrono;
 
 
-int main() {
-    filesystem::create_directory(".logs\\"); // create dir for logs
-	redirect_output_wrapper cerr_out(cerr);
-    zoned_time now{ current_zone(), system_clock::now() }; // GMT+3 "Europe/Moscow"
-	string time = format("{:%d_%m_%Y %H_%M_%OS}", now);
-	ofstream logfile(".logs\\" + time + ".log");
-	if (logfile) {
-		cerr_out.redirect(logfile);
-	}
+redirect_input_wrapper cin_in(std::cin);
 
-    PTS pts;
- 
-    filesystem::create_directory(".saves\\"); // create dir for saves
-    pts.set_save_path(".saves\\");
-
-    const int main_menu_size = 9;
-    const std::string main_menu[main_menu_size] = {
+void MainMenu(PTS& pts) {
+    static const int main_menu_size = 9;
+    static const std::string main_menu[main_menu_size] = {
     "1. Add Pipe",
     "2. Add Station",
     "3. View Objects",
@@ -35,65 +26,102 @@ int main() {
     "7. Load",
     "0. Exit"
     };
+    Print(main_menu, main_menu_size);
+    int menu = GetCorrectNumber(cin, 0, 7, ">> ", "**The number must be in the range 0..7, please repeat\n");
+    system("cls");
+    switch (menu) {
+    case 1:
+    {
+        cout << "-> Add Pipe" << endl;
+        pts.add(PTS::PIPE);
+        BackToMenu();
+        break;
+    }
+    case 2:
+    {
+        cout << "-> Add Station" << endl;
+        pts.add(PTS::STATION);
+        BackToMenu();
+        break;
+    }
+    case 3:
+    {
+        ViewMenu(pts);
+        break;
+    }
+    case 4:
+    {
+        EditMenu(pts, PTS::PIPE);
+        break;
+    }
+    case 5:
+    {
+        EditMenu(pts, PTS::STATION);
+        break;
+    }
+    case 6:
+    {
+        cout << "-> Save" << endl;
+        if (CheckBeforeSave(pts)) {
+            pts.save_to_file();
+        }
+        BackToMenu();
+        break;
+    }
+    case 7:
+    {
+        cout << "-> Load" << endl;
+        if (CheckBeforeLoad(pts)) {
+            pts.load_from_file();
+        }
+        BackToMenu();
+        break;
+    }
+    case 0:
+    default:
+    {
+        system("cls");
+        exit(0);
+        //return;
+    }
+    }
+}
+
+
+int main(int argc, char* argv[]) {
+
+    PTS pts;
+
+    filesystem::create_directory(".saves\\");
+    pts.set_save_path(".saves\\");
+
+
+    filesystem::create_directory(".logs\\");
+	redirect_output_wrapper cerr_out(cerr);
+    zoned_time now{ current_zone(), system_clock::now() };
+	string time = format("{:%d_%m_%Y_%H_%M_%OS}", now);
+	ofstream log_out(".logs\\" + time + ".log");
+	if (log_out) {
+		cerr_out.redirect(log_out);
+	}
+    
+    if (argc == 2) {
+        
+        ifstream log_in(".logs\\" + (string)argv[1]);
+        if (log_in) {
+            cin_in.redirect(log_in);
+
+            while (!cin.eof()) {
+                MainMenu(pts);
+            }
+
+            cin_in.~redirect_input_wrapper();
+
+        }
+        log_in.close();
+    }
 
     while (true) {
-        Print(main_menu, main_menu_size);
-        int menu = GetCorrectNumber(cin, 0, 8, ">> ", "**The number must be in the range 0..8, please repeat\n");
-        system("cls");
-        switch (menu) {
-        case 1:
-        {
-            cout << "-> Add Pipe" << endl;
-            pts.add(PTS::PIPE);
-            BackToMenu();
-            break;
-        }
-        case 2:
-        {
-            cout << "-> Add Station" << endl;
-            pts.add(PTS::STATION);
-            BackToMenu();
-            break;
-        }
-        case 3:
-        {
-            ViewMenu(pts);
-            break;
-        }
-        case 4:
-        {
-            EditMenu(pts, PTS::PIPE);
-            break;
-        }
-        case 5:
-        {
-            EditMenu(pts, PTS::STATION);
-            break;
-        }
-        case 6:
-        {
-            cout << "-> Save" << endl;
-            if (CheckBeforeSave(pts)) {
-                pts.save_to_file();
-            }
-            BackToMenu();
-            break;
-        }
-        case 7:
-        {
-            cout << "-> Load" << endl;
-            if (CheckBeforeLoad(pts)) {
-                pts.load_from_file();
-            }
-            BackToMenu();
-            break;
-        }
-        case 0:
-        default:
-        {
-            system("cls");
-            return 0;
-        }
-        }
-    }
+        MainMenu(pts);
+    }    
 }

@@ -134,8 +134,10 @@
     <ClCompile Include="PTS.cpp" />
     <ClCompile Include="Shpagin Pipeline Transport System %28PTS%29.cpp" />
     <ClCompile Include="Station.cpp" />
+    <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Log.h" />
     <ClInclude Include="Menu.h" />
     <ClInclude Include="Pipe.h" />
     <ClInclude Include="PTS.h" />
