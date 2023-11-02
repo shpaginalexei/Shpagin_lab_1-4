@@ -5,16 +5,19 @@
 class Station
 {
 public:
-	static int max_id;
 	
 	Station();
+	
+	static void reset_max_id();
+	static int get_maxid() { return max_id; }
 
 	int get_id() const;
-	int get_workshop() const;
-	int get_workshop_in_work() const;
+	std::string get_name() const;
+	double get_unused_workshops() const;
+	std::string get_ratio_workshops() const;
 
-	void start_workshop();
-	void stop_workshop();
+	enum EditWSType { START_ONE_WS, STOP_ONE_WS };
+	void change_num_active_workshops(const EditWSType);
 
 	friend std::istream& operator>> (std::istream&, Station&);
 	friend std::ostream& operator<< (std::ostream&, const Station&);
@@ -23,9 +26,10 @@ public:
 	friend std::ofstream& operator<< (std::ofstream&, const Station&);
 
 private:
+	static int max_id;
 	int id;
 	std::string name = "";
 	int workshops = 0;
-	int workshops_in_work = 0;
+	int active_workshops = 0;
 	double efficiency = 0.0;
 };

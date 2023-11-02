@@ -1,226 +1,352 @@
+#include "Menu.h"
+#include "PTS.h"
 #include "Pipe.h"
 #include "Station.h"
 #include "Utilities.h"
 #include <iostream>
-#include <fstream>
+#include <string>
+#include <sstream>
 #include <conio.h>
-#include <vector>
 
 using namespace std;
 
 
-//vector<Pipe> pipes{};
-//vector<Station> stations{};
-
-
-void ViewText(const string menu[], const int size) {
+void Print(const string menu[], const int size) {
     for (size_t i{}; i < size; i++) {
         cout << menu[i] << endl;
     }
-    cout << '\n';
+    cout << "\n";
 }
 
 void BackToMenu() {
-    cout << "\nPlease, press Enter to return to menu...";
-    while (_getch() != 13) {
-        continue;
-    }
+    cout << "\n\nPlease, press Enter to return to menu...";
+    while (_getch() != 13) { continue; }
     system("cls");
 }
 
-void AddPipe(vector<Pipe>& pipes) {
-    cout << "-> Add Pipe" << endl;
-    Pipe p;    
-    cin >> p;
-    pipes.push_back(p);
-    cout << '\n';
+bool SystemHasObjects(PTS& pts, const PTS::ObjectType obj) {
+    auto IDs = pts.get_ids_objects(obj);
+    if (!IDs.empty()) {
+        return true;
+    }
+    else {
+        cout << "*System has no " << pts.to_string(obj) << "s\n";
+        return false;
+    }
 }
 
-void AddStation(vector<Station>& stations) {
-    cout << "-> Add Station" << endl;
-    Station s;    
-    cin >> s;    
-    stations.push_back(s);
-    cout << '\n';
-}
-
-void ViewPipes(vector<Pipe>& pipes) {
+void ViewObjects(PTS& pts, const PTS::ObjectType obj) {
     cout << "-> View Objects" << endl
-        << "     -> Pipes" << endl;
+        << "     -> " << pts.to_string(obj) << "s" << endl;
 
-    if (pipes.size() == 0) {
-        cout << "\n*The system hasn't pipes\n\n";
+    if (SystemHasObjects(pts, obj)) {
+        pts.view(obj, pts.get_ids_objects(obj));
+    }    
+}
+
+void ViewMenu(PTS& pts) {
+    const int view_menu_size = 5;
+    const std::string view_menu[view_menu_size] = {
+    "-> View Objects",
+    "     1. View Pipes",
+    "     2. View Stations",
+    "     3. View All",
+    "     0. Return"
+    };
+    Print(view_menu, view_menu_size);
+    int view = GetCorrectNumber(cin, 0, 3, ">> ", "");
+    system("cls");
+    switch (view) {
+    case 1:
+    {
+        ViewObjects(pts, PTS::PIPE);
+        BackToMenu();
+        break;
+    }
+    case 2:
+    {
+        ViewObjects(pts, PTS::STATION);
+        BackToMenu();
+        break;
+    }
+    case 3:
+    {
+        ViewObjects(pts, PTS::PIPE);
+        cout << "\n";
+        ViewObjects(pts, PTS::STATION);
+        BackToMenu();
+        break;
+    }
+    case 0:
+    default: 
+    { 
+        system("cls"); 
+        break; 
+    }
+    }
+}
+
+unordered_set<int> SelectSpecificIDs(const unordered_set<int>& IDs, const int max_id) {
+    int select = GetCorrectNumber(cin, 0, 1, "Select (0 - all, 1 - some): ", "");
+    switch (select) {
+    case 1:
+    {
+        cout << "Select IDs ('0' - end):\n";
+        auto spec_IDs = SelectIDs(IDs, max_id);
+        return spec_IDs;
+    }
+    case 0: 
+    default: { return IDs; }
+    }
+}
+
+unordered_set<int> SearchByName(PTS& pts, const PTS::ObjectType obj) {
+    cout << "name: ";
+    string name;
+    InputLine(cin, name);
+    switch (obj) {
+    case PTS::PIPE: { 
+        return pts.search(check_pipe_by_name, name);
+    }
+    case PTS::STATION: { 
+        return pts.search(check_station_by_name, name);
+    }
+    default: { 
+        return unordered_set<int>{};
+    }
+    }
+}
+
+unordered_set<int> SearchPipes(PTS& pts) {
+    unordered_set<int> IDs;
+    int search = GetCorrectNumber(cin, 0, 2, "Select option (0 - name, 1 - status, 2 - all(no filter)): ", "");
+    switch (search) {
+    case 0: 
+    {
+        IDs = SearchByName(pts, PTS::PIPE);
+        break;
+    }
+    case 1: 
+    {
+        bool status = GetCorrectNumber(cin, 0, 1, "status(1 - work, 0 - in repair): ", "");
+        IDs = pts.search(check_pipe_by_status, status);
+        break;
+    }
+    case 2: 
+    { 
+        IDs = pts.get_ids_objects(PTS::PIPE);
+        break; 
+    }
+    }
+    return IDs;
+}
+
+unordered_set<int> SearchStations(PTS& pts) {
+    unordered_set<int> IDs;
+    int search = GetCorrectNumber(cin, 0, 2, "Select option (0 - name, 1 - % unactive workshops, 2 - all(no filter)): ", "");
+    switch (search) {
+    case 0:
+    {
+        IDs = SearchByName(pts, PTS::STATION);
+        break;
+    }
+    case 1:
+    {
+        double perc = GetCorrectNumber(cin, 0.0, 100.0, "% unactive workshops: ", "");
+        IDs = pts.search(check_station_by_unactive_workshops, perc);
+        break;
+    }
+    case 2:
+    {
+        IDs = pts.get_ids_objects(PTS::STATION);
+        break;
+    }
+    }
+    return IDs;
+}
+
+unordered_set<int> SearchObjects(PTS& pts, const PTS::ObjectType obj) {
+    switch (obj) {
+    case PTS::PIPE: { 
+        return SearchPipes(pts);
+    }
+    case PTS::STATION: { 
+        return SearchStations(pts);
+    }
+    }
+}
+
+void Edit(PTS& pts, const PTS::ObjectType obj, const unordered_set<int>& IDs) {
+    switch (obj) {
+    case PTS::PIPE:
+    {
+        int edit = GetCorrectNumber(cin, 0, 2, "Select option (1 - work, 0 - in repair, 2 - opposite): ", "");
+
+        switch (edit) {
+        case 0: { pts.edit(IDs, Pipe::SET_IN_REPAIR); break; }
+        case 1: { pts.edit(IDs, Pipe::SET_WORK);      break; }
+        case 2: { pts.edit(IDs, Pipe::SET_OPPOSITE);  break; }
+        }
         return;
     }
+    case PTS::STATION:
+    {
+        int edit = GetCorrectNumber(cin, 0, 1, "Select option (1 - start workshop, 0 - stop workshop): ", "");
 
-    for (auto p : pipes) {
-        cout << p;
-    }
-    cout << '\n';
-}
-
-void ViewStations(vector<Station>& stations) {
-    cout << "-> View Objects" << endl
-        << "     -> Stations" << endl;
-
-    if (stations.size() == 0) {
-        cout << "\n*The system hasn't stations\n\n";
+        switch (edit) {
+        case 0: { pts.edit(IDs, Station::STOP_ONE_WS);  break; }
+        case 1: { pts.edit(IDs, Station::START_ONE_WS); break; }
+        }
         return;
     }
-
-    for (auto s : stations) {
-        cout << s;
     }
-    cout << '\n';
 }
 
-void ViewAll(vector<Pipe>& pipes, vector<Station>& stations) {
-    ViewPipes(pipes);
-    ViewStations(stations);
+void EditOneObject(PTS& pts, const PTS::ObjectType obj, bool remove = false) {
+    auto all_IDs = pts.get_ids_objects(obj);
+    pts.short_view(obj, all_IDs);
+
+    int selected_ID = GetCorrectNumber(cin, 1, INT_MAX, "Select ID: ", "**The number must be more 1, please repeat\n");
+
+    if (!all_IDs.contains(selected_ID)) {
+        cout << "id::" << selected_ID << " *No such id exists\n";
+    }
+    else if (!remove) { 
+        Edit(pts, obj, { selected_ID });
+        pts.short_view(obj, all_IDs);
+    }
+    else { 
+        pts.remove(obj, selected_ID);
+        cout << "id::" << selected_ID << " " << pts.to_string(obj) << " was removed\n";
+    }
 }
 
-void EditPipe(vector<Pipe>& pipes) {
-    cout << "-> Edit Pipe" << endl;
-
-    if (pipes.size() == 0) {
-        cout << "\n*The system hasn't pipes\n\n";
+void BatchEditing(PTS& pts, const PTS::ObjectType obj) {
+    auto IDs = SearchObjects(pts, obj);
+    if (IDs.empty()) {
+        cout << "*No valid IDs selected\n";
         return;
     }
+    pts.short_view(obj, IDs);
 
-    cout << '\n';
-    int x = -1;
-    if (pipes.size() == 1) {
-        cout << "*Only one Pipe in system\n" << endl;
-        if (GetCorrectYesNoValue<double>("Do you want to edit this Pipe (Y/n)?: "))
-            x = 0;
-        else {
-            cout << '\n';
-            return;
-        }
+    int max_id = obj == PTS::PIPE ? Pipe::get_maxid() : Station::get_maxid();
+    IDs = SelectSpecificIDs(IDs, max_id);
+
+    if (!IDs.empty()) {
+        pts.short_view(obj, IDs);
+        Edit(pts, obj, IDs);
+        pts.short_view(obj, IDs);
     }
-    else
-        x = GetCorrectNumValue<int>("What Pipe do you want to edit (1-" + std::to_string(pipes.size()) + ")?: ", 0, pipes.size(),
-            "**The number must be in the range 1.." + std::to_string(pipes.size()) + ", please repeat\n") - 1;
-    Pipe& p = pipes[x];
-
-    cout << "\n\tPipe " << p.get_id() << endl
-        << "..." << endl
-        << "status - " << p.get_status() << endl;
-
-    bool confirm = GetCorrectYesNoValue<double>("Are you sure to change this parameter (Y/n)?: ");
-    if (confirm) {
-        p.change_status();
-    }
-
-    cout << "\n\tPipe " << p.get_id() << endl
-        << "..." << endl
-        << "status - " << p.get_status() << endl;
+    else { cout << "*No valid IDs selected\n"; }
 }
 
-void EditStation(vector<Station>& stations) {
-    cout << "-> Edit Station" << endl;
-
-    if (stations.size() == 0) {
-        cout << "\n*The system hasn't stations\n\n";
-        return;
-    }
-
-    cout << '\n';
-    int x = -1;
-    if (stations.size() == 1) {
-        cout << "*Only one Station in system\n" << endl;
-        if (GetCorrectYesNoValue<double>("Do you want to edit this Station (Y/n)?: "))
-            x = 0;
-        else {
-            cout << '\n';
-            return;
-        }
-    }
-    else
-        x = GetCorrectNumValue<int>("What Station do you want to edit (1-" + std::to_string(stations.size()) + ")?: ", 0, stations.size(),
-            "**The number must be in the range 1.." + std::to_string(stations.size()) + ", please repeat\n") - 1;
-    Station& s = stations[x];
-
-    cout << "\n\tStation " << x + 1 << endl
-        << "..." << endl
-        << "workshops - " << s.get_workshop() << endl
-        << "workshops in work - " << s.get_workshop_in_work() << '\n' << endl;
-
-    bool confirm = GetCorrectYesNoValue<double>("Are you sure to change this parameter (Y/n)?: ");
-    if (confirm) {
-        if (0 < s.get_workshop_in_work() < s.get_workshop()) {
-            int count = GetCorrectNumValue("Start (1) or stop (0) the workshop?: ", -1, 1,
-                "**The number must be in the range 0..1, please repeat\n");
-            count == 1 ? s.start_workshop() : s.stop_workshop();
-        }
-        else if (s.get_workshop_in_work() == 0) {
-            if (GetCorrectYesNoValue<double>("Start one workshop (Y/n)?: "))
-                s.start_workshop();
-        }
-        else if ((int)s.get_workshop_in_work() == (int)s.get_workshop()) {
-            if (GetCorrectYesNoValue<double>("Stop one workshop (Y/n)?: "))
-                s.stop_workshop();
-        }
-    }
-    cout << "\n\tStation " << x + 1 << endl
-        << "..." << endl
-        << "workshops - " << s.get_workshop() << endl
-        << "workshops in work - " << s.get_workshop_in_work() << '\n' << endl;
-}
-
-void SaveToFile(const string& file_name, vector<Pipe>& pipes, vector<Station>& stations) {
-    cout << "-> Save" << endl;
-
-    ofstream file;
-    file.open(file_name, ios::out);
-    if (file.is_open()) {
-        int count_pipes = pipes.size();
-        int count_stations = stations.size();
-
-        file << count_pipes << " " << count_stations << endl;
-        for (Pipe p : pipes) {
-            file << p;
-        }
-        for (Station s : stations) {
-            file << s;
-        }
-        cout << '\n' << count_pipes << " Pipes saved successfully!" << endl
-                     << count_stations << " Stations saved successfully!\n" << endl;
-    }
-    file.close();
-}
-
-void LoadFromFile(const string& file_name, vector<Pipe>& pipes, vector<Station>& stations) {
-    cout << "-> Load" << endl;
-    pipes.clear();
-    stations.clear();
+void EditMenu(PTS& pts, const PTS::ObjectType obj) {
+    cout << "-> Edit " << pts.to_string(obj) << "s" << endl;
     
-    ifstream file;
-    file.open(file_name, ios::in);
-    if (file.is_open()) {
-        Pipe new_pipe;
-        Station new_station;
-        Pipe::max_id = 0;
-        Station::max_id = 0;
-        int count_pipes = 0;
-        int count_stations = 0;
-
-        file >> count_pipes >> count_stations;
-        for (int i = 0; i < count_pipes; i++) {
-            file >> new_pipe;
-            pipes.push_back(new_pipe);
-            if (Pipe::max_id < new_pipe.get_id())
-                Pipe::max_id = new_pipe.get_id();
-        }
-        for (int i = 0; i < count_stations; i++) {
-            file >> new_station;
-            stations.push_back(new_station);
-            if (Station::max_id < new_station.get_id())
-                Station::max_id = new_station.get_id();
-        }
-
-        cout << '\n' << count_pipes << '/' << pipes.size() << " Pipes loaded successfully!" << endl
-            << count_stations << '/' << stations.size() << " Stations loaded successfully!\n" << endl;
+    if (!SystemHasObjects(pts, obj)) {
+        BackToMenu();
+        return;
     }
-    file.close();
+
+    const int edit_menu_size = 4;
+    const std::string edit_menu[edit_menu_size] = {
+    "     1. Edit " + pts.to_string(obj),
+    "     2. Banch editing " + pts.to_string(obj) + "s",
+    "     3. Remove " + pts.to_string(obj),
+    "     0. Return"
+    };
+    Print(edit_menu, edit_menu_size);
+    int view = GetCorrectNumber(cin, 0, 3, ">> ", "");
+    system("cls");
+    cout << "-> Edit " << pts.to_string(obj) << "s" << endl;
+
+    switch (view) {
+    case 1:
+    {
+        cout << "     -> One " << pts.to_string(obj) << endl;
+        EditOneObject(pts, obj);
+        BackToMenu();
+        break;
+    }
+    case 2:
+    {
+        cout << "     -> Banch editing" << endl;
+        BatchEditing(pts, obj);
+        BackToMenu();
+        break;
+    }
+    case 3:
+    {
+        cout << "     -> Remove " << pts.to_string(obj) << endl;
+        EditOneObject(pts, obj, true);
+        BackToMenu();
+        break;
+    }
+    case 0:
+    default: 
+    { 
+        system("cls");
+        break;
+    }
+    }
+}
+
+void InputFileName(PTS& pts) {
+    cout << "Entry name of the file: ";
+    string fn;
+    InputLine(cin >> ws, fn);
+    pts.set_filename(fn);
+}
+
+bool CheckBeforeSave(PTS& pts) {
+    if (pts.saved()) {
+        if (pts.has_saved_file()) { 
+            cout << "*There are no unsaved changes in the system\n"; 
+            return false; 
+        }
+        else if (pts.empty()) {
+            cout << "*System is empty\n";
+            if (GetCorrectNumber(cin, 0, 1, "Do you want to save an empty file? (1 - yes, 0 - no): ", "") == 0) {
+                return false; 
+            }
+        }
+    }
+    else if (pts.has_saved_file()) {
+        if (GetCorrectNumber(cin, 0, 1, "Do you want to save in the same file? (1 - yes, 0 - no): ", "") == 0) {
+            InputFileName(pts);
+        }
+        return true;
+    }
+    else if (pts.empty()) {
+        cout << "*System is empty\n";
+        if (GetCorrectNumber(cin, 0, 1, "Do you want to save an empty file? (1 - yes, 0 - no): ", "") == 0) {
+            return false; 
+        }
+    }
+    InputFileName(pts);
+    return true;
+}
+
+bool CheckBeforeLoad(PTS& pts) {
+    if (!pts.saved()) {
+        if (pts.has_saved_file()) {
+            cout << "*There are unsaved changes in the system\n";
+            if (GetCorrectNumber(cin, 0, 1, "Do you want to save in the same file? (1 - yes, 0 - no): ", "") == 0) {
+                InputFileName(pts);
+            }
+            pts.save_to_file();
+        }
+        else {
+            cout << "*The changes made are new and not saved\n";
+            if (GetCorrectNumber(cin, 0, 1, "Do you want to save changes to file? (1 - yes, 0 - no): ", "") == 0) {
+                cout << "*Data was lost\n";
+            }
+            else {
+                InputFileName(pts);
+                pts.save_to_file();
+            }
+        }
+    }
+    InputFileName(pts);
+    return true;
 }
