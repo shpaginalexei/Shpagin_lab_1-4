@@ -8,39 +8,59 @@
 #include <unordered_set>
 
 
-extern redirect_input_wrapper cin_in;
+#define INPUTLINE(in, str) getline(in >> ws, str); \
+                           cerr << str << endl;
+
+
+extern redirect_stream_wrapper<std::istream> cin_in;
 
 
 void InputLine(std::istream&, std::string&);
 
-std::unordered_set<int> SelectIDs(std::istream&, const std::unordered_set<int>&);
+std::unordered_set<int> SelectIDs(const std::unordered_set<int>&, int);
 
 template <typename T>
 T GetCorrectNumber(std::istream& in, T min, T max,
-    const std::string welcome_message, const std::string error_message) {
+    const std::string welcome_message, const std::string error_message="") {
     bool correct_answer = false;
-    T value;
+    T value = 0;
     while (!correct_answer) {
+
         std::cout << welcome_message;
 
-        if (in.peek() == '\n' || in.peek() == EOF) {
-            cin_in.redirect_back();
-            std::cout << std::string(welcome_message.size(), '\b');
-            continue;
+        if (cin_in.redirected) {
+            int offset = 0;
+            while (in.peek() != '\n' && in.peek() != EOF) {
+                in.seekg(1, std::ios::cur);
+                offset++;
+            }
+            in.seekg(2, std::ios::cur);
+            if (in.peek() == EOF) {
+                cin_in.redirect_back();
+                std::cout << std::string(welcome_message.size(), '\b');
+                continue;
+            }
+            in.seekg(-offset - 2, std::ios::cur);
         }
-        else {
-            in >> std::ws;
-            in >> value;
-        }
+        
+        in >> std::ws;
+        in >> value;
+
+
         if (cin_in.redirected) {
             std::cout << value << std::endl;
         }
 
-        if (std::cin.fail() || std::cin.peek() != '\n') { 
+        if (std::cin.fail() || !(std::cin.peek() == ' ' || std::cin.peek() == '\n')) {
             std::cout << "**Invalid input, please repeat\n";
         }
         else if (!(min <= value && value <= max)) { 
-            std::cout << error_message;
+            if (error_message == "") {
+                std::cout << "**The number must be in range " << min << ".." << max << ", please repeat\n";
+            }
+            else {
+                std::cout << error_message;
+            }
         }
         else { 
             correct_answer = true;

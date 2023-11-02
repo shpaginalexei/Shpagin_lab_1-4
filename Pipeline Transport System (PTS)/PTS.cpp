@@ -131,9 +131,29 @@ void PTS::clear_system() {
     changed = false;
 }
 
+bool PTS::empty() const {
+    return pipes.size() == 0 && stations.size() == 0;
+}
+
+bool PTS::saved() const {
+    return !changed;
+}
+
+bool PTS::has_saved_file() const {
+    return file_name != "";
+}
+
+void PTS::set_save_directory(const std::string dir) {
+    directory = dir;
+}
+
+void PTS::set_filename(const string fn) {
+    file_name = fn;
+}
+
 void PTS::save_to_file() {
     ofstream file;
-    file.open(path + file_name, ios::out);
+    file.open(directory + file_name, ios::out);
     if (file.is_open()) {
         size_t count_pipes = pipes.size();
         size_t count_stations = stations.size();
@@ -159,7 +179,7 @@ void PTS::load_from_file() {
     clear_system();
 
     ifstream file;
-    file.open(path + file_name, ios::in);
+    file.open(directory + file_name, ios::in);
     if (file.is_open()) {
         Pipe new_pipe;
         Station new_station;

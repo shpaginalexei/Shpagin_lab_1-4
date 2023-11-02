@@ -56,12 +56,9 @@ void Station::change_num_active_workshops(const EditWSType type) {
 istream& operator>> (istream& in, Station& s) {
     cout << "name: ";
     InputLine(in, s.name);
-    s.workshops = GetCorrectNumber(in, 1, INT_MAX,
-        "workshops: ", "**The number must be greater than 1, please repeat\n");
-    s.active_workshops = GetCorrectNumber(in, 0, s.workshops,
-        "workshops in work: ", "**The number must be in the range 0.." + to_string(s.workshops) + ", please repeat\n");
-    s.efficiency = GetCorrectNumber(in, 0.0, 100.0,
-        "efficiency (%): ", "**The number must be in the range 0..100, please repeat\n");
+    s.workshops = GetCorrectNumber(in, 1, INT_MAX, "workshops: ", "**The number must be greater than 1, please repeat\n");
+    s.active_workshops = GetCorrectNumber(in, 0, s.workshops, "workshops in work: ", "");
+    s.efficiency = GetCorrectNumber(in, 0.0, 100.0, "efficiency (%): ", "");
     return in;
 }
 

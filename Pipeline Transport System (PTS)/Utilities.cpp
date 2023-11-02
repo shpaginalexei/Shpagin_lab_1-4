@@ -1,4 +1,5 @@
 #include "Utilities.h"
+#include <string>
 #include <sstream>
 #include <algorithm>
 
@@ -6,43 +7,57 @@ using namespace std;
 
 
 void InputLine(istream& in, string& str) {
-    if (in.peek() == '\n' || in.peek() == EOF) {
-        cin_in.redirect_back();
+    if (cin_in.redirected) {
+        int offset = 0;
+        while (in.peek() != '\n' && in.peek() != EOF) {
+            in.seekg(1, std::ios::cur);
+            offset++;
+        }
+        in.seekg(2, std::ios::cur);
+        if (in.peek() == EOF) {
+            cin_in.redirect_back();
+        }
+        in.seekg(-offset - 2, std::ios::cur);
     }
-    getline(in >> ws, str);
+
+    INPUTLINE(in, str);
+
     if (cin_in.redirected) {
         cout << str << endl;
     }
-    cerr << str << endl;
 }
 
-std::unordered_set<int> SelectIDs(istream& in, const std::unordered_set<int>& all_IDs) {
-    if (in.peek() == '\n' || in.peek() == EOF) {
-        cin_in.redirect_back();
-    }
-    std::unordered_set<int> IDs;
-    std::string str = " ";
+unordered_set<int> SelectIDs(const unordered_set<int>& all_IDs, int max_id) {
+    /*unordered_set<int> IDs;
+    string str = " ";
     string line = " ";
     while (line.back() != '#') {
         getline(cin, line);
         str += " " + line;
     }
-    std::stringstream s{ str };
-    std::string buf;
+    stringstream s{ str };
+    int id;
     while (!s.eof()) {
-        s >> buf;
-        if (std::all_of(buf.begin(), buf.end(), ::isdigit) 
-            && all_IDs.contains(stoi(buf))) {
-            IDs.insert(stoi(buf));
+        id = GetCorrectNumber(s, 0, max_id, "", "");
+        if (s.fail() || all_IDs.contains(id)) {
+            IDs.insert(id);
         }
         else {
             s.clear();
-            s.ignore(std::numeric_limits<std::streamsize>::max(), ' ');
+            s.ignore(numeric_limits<streamsize>::max(), ' ');
         }
     }
-    if (cin_in.redirected) {
-        cout << str << endl;
-    }
     cerr << str << endl;
+    return IDs;*/
+
+    unordered_set<int> IDs;
+    int id;
+    do {
+        id = GetCorrectNumber(cin, 0, max_id, ">> ", "");
+        if (all_IDs.contains(id)) {
+            IDs.insert(id);
+        }
+    } while (id != 0);
+
     return IDs;
 }

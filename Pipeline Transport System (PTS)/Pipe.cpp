@@ -50,8 +50,7 @@ istream& operator>> (istream& in, Pipe& p) {
         "lenght (km): ", "**The number must be positive, please repeat\n");
     p.diameter = GetCorrectNumber(in, 1, INT_MAX,
         "diameter (mm): ", "**The number must be positive, please repeat\n");
-    p.status = GetCorrectNumber(in, 0, 1,
-        "status (1 - work, 0 - in repair): ", "**The enter must be 0 or 1, please repeat\n");   
+    p.status = GetCorrectNumber(in, 0, 1, "status (1 - work, 0 - in repair): ", "");   
     return in;
 }
 

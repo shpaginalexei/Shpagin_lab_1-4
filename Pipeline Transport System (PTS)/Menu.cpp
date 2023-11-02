@@ -54,7 +54,7 @@ void ViewMenu(PTS& pts) {
     "     0. Return"
     };
     Print(view_menu, view_menu_size);
-    int view = GetCorrectNumber(cin, 0, 3, ">> ", "**The number must be in the range 0..3, please repeat\n");
+    int view = GetCorrectNumber(cin, 0, 3, ">> ", "");
     system("cls");
     switch (view) {
     case 1:
@@ -86,14 +86,13 @@ void ViewMenu(PTS& pts) {
     }
 }
 
-unordered_set<int> SelectSpecificIDs(const unordered_set<int>& IDs) {
-    int select = GetCorrectNumber(cin, 0, 1, "Select (0 - all, 1 - some): ",
-        "**The number must be 0 or 1, please repeat\n");
+unordered_set<int> SelectSpecificIDs(const unordered_set<int>& IDs, const int max_id) {
+    int select = GetCorrectNumber(cin, 0, 1, "Select (0 - all, 1 - some): ", "");
     switch (select) {
     case 1:
     {
-        cout << "Select IDs ('#' - end, ' ' - sep): ";
-        auto spec_IDs = SelectIDs(cin, IDs);
+        cout << "Select IDs ('0' - end):\n";
+        auto spec_IDs = SelectIDs(IDs, max_id);
         return spec_IDs;
     }
     case 0: 
@@ -120,8 +119,7 @@ unordered_set<int> SearchByName(PTS& pts, const PTS::ObjectType obj) {
 
 unordered_set<int> SearchPipes(PTS& pts) {
     unordered_set<int> IDs;
-    int search = GetCorrectNumber(cin, 0, 2, "Select option (0 - name, 1 - status, 2 - all(no filter)): ",
-        "**The number must be in range 0..2, please repeat\n");
+    int search = GetCorrectNumber(cin, 0, 2, "Select option (0 - name, 1 - status, 2 - all(no filter)): ", "");
     switch (search) {
     case 0: 
     {
@@ -130,7 +128,7 @@ unordered_set<int> SearchPipes(PTS& pts) {
     }
     case 1: 
     {
-        bool status = GetCorrectNumber(cin, 0, 1, "status(1 - work, 0 - in repair): ", "**The number must be 0 or 1, please repeat\n");
+        bool status = GetCorrectNumber(cin, 0, 1, "status(1 - work, 0 - in repair): ", "");
         IDs = pts.search(check_pipe_by_status, status);
         break;
     }
@@ -145,8 +143,7 @@ unordered_set<int> SearchPipes(PTS& pts) {
 
 unordered_set<int> SearchStations(PTS& pts) {
     unordered_set<int> IDs;
-    int search = GetCorrectNumber(cin, 0, 2, "Select option (0 - name, 1 - % unactive workshops, 2 - all(no filter)): ",
-        "**The number must be in range 0..2, please repeat\n");
+    int search = GetCorrectNumber(cin, 0, 2, "Select option (0 - name, 1 - % unactive workshops, 2 - all(no filter)): ", "");
     switch (search) {
     case 0:
     {
@@ -155,7 +152,7 @@ unordered_set<int> SearchStations(PTS& pts) {
     }
     case 1:
     {
-        double perc = GetCorrectNumber(cin, 0.0, 100.0, "% unactive workshops: ", "**The number must be in range 0..100, please repeat\n");
+        double perc = GetCorrectNumber(cin, 0.0, 100.0, "% unactive workshops: ", "");
         IDs = pts.search(check_station_by_unactive_workshops, perc);
         break;
     }
@@ -176,9 +173,6 @@ unordered_set<int> SearchObjects(PTS& pts, const PTS::ObjectType obj) {
     case PTS::STATION: { 
         return SearchStations(pts);
     }
-    default: { 
-        return unordered_set<int>{};
-    }
     }
 }
 
@@ -186,8 +180,7 @@ void Edit(PTS& pts, const PTS::ObjectType obj, const unordered_set<int>& IDs) {
     switch (obj) {
     case PTS::PIPE:
     {
-        int edit = GetCorrectNumber(cin, 0, 2, "Select option (1 - work, 0 - in repair, 2 - opposite): ",
-            "**The number must be in range 0..2, please repeat\n");
+        int edit = GetCorrectNumber(cin, 0, 2, "Select option (1 - work, 0 - in repair, 2 - opposite): ", "");
 
         switch (edit) {
         case 0: { pts.edit(IDs, Pipe::SET_IN_REPAIR); break; }
@@ -198,8 +191,7 @@ void Edit(PTS& pts, const PTS::ObjectType obj, const unordered_set<int>& IDs) {
     }
     case PTS::STATION:
     {
-        int edit = GetCorrectNumber(cin, 0, 1, "Select option (1 - start workshop, 0 - stop workshop): ",
-            "**The number must be in range 0 or 1, please repeat\n");
+        int edit = GetCorrectNumber(cin, 0, 1, "Select option (1 - start workshop, 0 - stop workshop): ", "");
 
         switch (edit) {
         case 0: { pts.edit(IDs, Station::STOP_ONE_WS);  break; }
@@ -231,9 +223,14 @@ void EditOneObject(PTS& pts, const PTS::ObjectType obj, bool remove = false) {
 
 void BatchEditing(PTS& pts, const PTS::ObjectType obj) {
     auto IDs = SearchObjects(pts, obj);
+    if (IDs.empty()) {
+        cout << "*No valid IDs selected\n";
+        return;
+    }
     pts.short_view(obj, IDs);
 
-    IDs = SelectSpecificIDs(IDs);
+    int max_id = obj == PTS::PIPE ? Pipe::get_maxid() : Station::get_maxid();
+    IDs = SelectSpecificIDs(IDs, max_id);
 
     if (!IDs.empty()) {
         pts.short_view(obj, IDs);
@@ -259,7 +256,7 @@ void EditMenu(PTS& pts, const PTS::ObjectType obj) {
     "     0. Return"
     };
     Print(edit_menu, edit_menu_size);
-    int view = GetCorrectNumber(cin, 0, 3, ">> ", "**The number must be in the range 0..3, please repeat\n");
+    int view = GetCorrectNumber(cin, 0, 3, ">> ", "");
     system("cls");
     cout << "-> Edit " << pts.to_string(obj) << "s" << endl;
 
@@ -296,69 +293,53 @@ void EditMenu(PTS& pts, const PTS::ObjectType obj) {
 
 void InputFileName(PTS& pts) {
     cout << "Entry name of the file: ";
-    InputLine(cin, pts.file_name);
+    string fn;
+    InputLine(cin >> ws, fn);
+    pts.set_filename(fn);
 }
 
 bool CheckBeforeSave(PTS& pts) {
-    if (!pts.changed) {
-        if (pts.saved()) { 
+    if (pts.saved()) {
+        if (pts.has_saved_file()) { 
             cout << "*There are no unsaved changes in the system\n"; 
             return false; 
         }
         else if (pts.empty()) {
             cout << "*System is empty\n";
-            if (GetCorrectNumber(cin, 0, 1, "Do you want to save an empty file? (1 - yes, 0 - no): ", 
-                "**The enter must be 0 or 1, please repeat\n") == 0) { 
+            if (GetCorrectNumber(cin, 0, 1, "Do you want to save an empty file? (1 - yes, 0 - no): ", "") == 0) {
                 return false; 
             }
-            else {
-                InputFileName(pts);
-                return true;
-            }
         }
-        else { cout << "\n?\n"; return false; }
     }
-    else if (pts.saved()) {
-        if (GetCorrectNumber(cin, 0, 1, "Do you want to save in the same file? (1 - yes, 0 - no): ",
-            "**The enter must be 0 or 1, please repeat\n") == 0) { 
+    else if (pts.has_saved_file()) {
+        if (GetCorrectNumber(cin, 0, 1, "Do you want to save in the same file? (1 - yes, 0 - no): ", "") == 0) {
             InputFileName(pts);
         }
         return true;
     }
     else if (pts.empty()) {
         cout << "*System is empty\n";
-        if (GetCorrectNumber(cin, 0, 1, "Do you want to save an empty file? (1 - yes, 0 - no): ",
-            "**The enter must be 0 or 1, please repeat\n") == 0) { 
+        if (GetCorrectNumber(cin, 0, 1, "Do you want to save an empty file? (1 - yes, 0 - no): ", "") == 0) {
             return false; 
         }
-        else { 
-            InputFileName(pts);
-            return true;
-        }
     }
-    else { 
-        InputFileName(pts);
-        return true;
-    }
+    InputFileName(pts);
+    return true;
 }
 
 bool CheckBeforeLoad(PTS& pts) {
-    if (pts.changed) {
-        if (pts.saved()) {
+    if (!pts.saved()) {
+        if (pts.has_saved_file()) {
             cout << "*There are unsaved changes in the system\n";
-            if (GetCorrectNumber(cin, 0, 1, "Do you want to save in the same file? (1 - yes, 0 - no): ",
-                "**The enter must be 0 or 1, please repeat\n") == 0) {
+            if (GetCorrectNumber(cin, 0, 1, "Do you want to save in the same file? (1 - yes, 0 - no): ", "") == 0) {
                 InputFileName(pts);
             }
             pts.save_to_file();
         }
         else {
             cout << "*The changes made are new and not saved\n";
-            if (GetCorrectNumber(cin, 0, 1, "Do you want to save changes to file? (1 - yes, 0 - no): ",
-                "**The enter must be 0 or 1, please repeat\n") == 0) {
+            if (GetCorrectNumber(cin, 0, 1, "Do you want to save changes to file? (1 - yes, 0 - no): ", "") == 0) {
                 cout << "*Data was lost\n";
-                InputFileName(pts);
-                return true;
             }
             else {
                 InputFileName(pts);

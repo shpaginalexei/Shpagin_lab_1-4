@@ -27,22 +27,25 @@ public:
 
 	std::unordered_set<int> get_ids_objects(const ObjectType) const;
 
-	bool empty() { return pipes.size() == 0 && stations.size() == 0; }
-	bool saved() { return file_name != ""; }
-	bool changed = false;
-	std::string file_name = "";
-	void set_save_path(const std::string savepath) { path = savepath; }
+	bool empty() const;
+	bool has_saved_file() const;
+	bool saved() const;
+	void set_save_directory(const std::string);
+	void set_filename(const std::string);
 
 	void save_to_file();
 	void load_from_file();
 
 private:
 
-	void clear_system();
-
 	std::unordered_map<int, Pipe> pipes{};
 	std::unordered_map<int, Station> stations{};
-	std::string path = "";
+
+	void clear_system();
+	bool changed = false;
+	std::string file_name = "";
+	std::string directory = "";
+	
 };
 
 bool check_pipe_by_name(const Pipe&, const std::string);

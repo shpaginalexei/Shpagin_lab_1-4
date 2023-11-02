@@ -5,14 +5,11 @@
 #include <fstream>
 #include <chrono>
 #include <format>
-
-#include <conio.h>
-
 using namespace std;
 using namespace chrono;
 
 
-redirect_input_wrapper cin_in(std::cin);
+redirect_stream_wrapper<istream> cin_in(cin);
 
 void MainMenu(PTS& pts) {
     static const int main_menu_size = 9;
@@ -27,7 +24,7 @@ void MainMenu(PTS& pts) {
     "0. Exit"
     };
     Print(main_menu, main_menu_size);
-    int menu = GetCorrectNumber(cin, 0, 7, ">> ", "**The number must be in the range 0..7, please repeat\n");
+    int menu = GetCorrectNumber(cin, 0, 7, ">> ", "");
     system("cls");
     switch (menu) {
     case 1:
@@ -46,6 +43,7 @@ void MainMenu(PTS& pts) {
     }
     case 3:
     {
+        //exit(1);
         ViewMenu(pts);
         break;
     }
@@ -93,11 +91,10 @@ int main(int argc, char* argv[]) {
     PTS pts;
 
     filesystem::create_directory(".saves\\");
-    pts.set_save_path(".saves\\");
-
+    pts.set_save_directory(".saves\\");
 
     filesystem::create_directory(".logs\\");
-	redirect_output_wrapper cerr_out(cerr);
+    redirect_stream_wrapper cerr_out(cerr);
     zoned_time now{ current_zone(), system_clock::now() };
 	string time = format("{:%d_%m_%Y_%H_%M_%OS}", now);
 	ofstream log_out(".logs\\" + time + ".log");
@@ -106,7 +103,6 @@ int main(int argc, char* argv[]) {
 	}
     
     if (argc == 2) {
-        
         ifstream log_in(".logs\\" + (string)argv[1]);
         if (log_in) {
             cin_in.redirect(log_in);
@@ -115,7 +111,7 @@ int main(int argc, char* argv[]) {
                 MainMenu(pts);
             }
 
-            cin_in.~redirect_input_wrapper();
+            cin_in.~redirect_stream_wrapper();
 
         }
         log_in.close();
