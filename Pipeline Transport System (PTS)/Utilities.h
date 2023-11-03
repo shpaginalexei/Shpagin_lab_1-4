@@ -23,7 +23,7 @@ template <typename T>
 T GetCorrectNumber(std::istream& in, T min, T max,
     const std::string welcome_message, const std::string error_message="") {
     bool correct_answer = false;
-    T value = 0;
+    T value;
     while (!correct_answer) {
 
         std::cout << welcome_message;
@@ -46,12 +46,11 @@ T GetCorrectNumber(std::istream& in, T min, T max,
         in >> std::ws;
         in >> value;
 
-
         if (cin_in.redirected) {
             std::cout << value << std::endl;
-        }
+        }        
 
-        if (std::cin.fail() || !(std::cin.peek() == ' ' || std::cin.peek() == '\n')) {
+        if (std::cin.fail() || std::cin.peek() != '\n') {
             std::cout << "**Invalid input, please repeat\n";
         }
         else if (!(min <= value && value <= max)) { 

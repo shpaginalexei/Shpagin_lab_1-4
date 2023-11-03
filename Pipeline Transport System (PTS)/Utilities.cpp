@@ -1,7 +1,7 @@
 #include "Utilities.h"
 #include <string>
-#include <sstream>
-#include <algorithm>
+//#include <sstream>
+//#include <algorithm>
 
 using namespace std;
 
@@ -33,13 +33,13 @@ unordered_set<int> SelectIDs(const unordered_set<int>& all_IDs, int max_id) {
     string line = " ";
     while (line.back() != '#') {
         getline(cin, line);
-        str += " " + line;
+        str += line + "\n";
     }
     stringstream s{ str };
     int id;
     while (!s.eof()) {
         id = GetCorrectNumber(s, 0, max_id, "", "");
-        if (s.fail() || all_IDs.contains(id)) {
+        if (all_IDs.contains(id)) {
             IDs.insert(id);
         }
         else {

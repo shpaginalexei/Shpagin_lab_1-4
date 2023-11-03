@@ -111,8 +111,6 @@ int main(int argc, char* argv[]) {
                 MainMenu(pts);
             }
 
-            cin_in.~redirect_stream_wrapper();
-
         }
         log_in.close();
     }
