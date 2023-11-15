@@ -17,6 +17,10 @@ Station::Station() {
     id = ++max_id;
 }
 
+int Station::get_max_id() {
+    return max_id;
+}
+
 int Station::get_id() const {
     return id;
 }

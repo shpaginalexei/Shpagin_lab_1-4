@@ -9,9 +9,14 @@ using namespace std;
 
 
 int Pipe::max_id = 0;
+const int Pipe::valid_diameters[4] = {500, 700, 1000, 1400};
 
 void Pipe::reset_max_id() {
     max_id = 0;
+}
+
+int Pipe::get_max_id() { 
+    return max_id;
 }
 
 Pipe::Pipe() {
@@ -24,6 +29,10 @@ int Pipe::get_id() const {
 
 string Pipe::get_name() const {
     return name;
+}
+
+int Pipe::get_diameter() const {
+    return diameter;
 }
 
 bool Pipe::get_status() const {
@@ -43,13 +52,17 @@ void Pipe::change_status(const EditStatusType type) {
     }
 }
 
+
 istream& operator>> (istream& in, Pipe& p) {
     cout << "name: ";
     InputLine(in, p.name);
     p.lenght = GetCorrectNumber(in, 0.000001, DBL_MAX,
         "lenght (km): ", "**The number must be positive, please repeat\n");
-    p.diameter = GetCorrectNumber(in, 1, INT_MAX,
-        "diameter (mm): ", "**The number must be positive, please repeat\n");
+    p.diameter = GetCorrectNumber(in, 500, 1400, "diameter (500, 700, 1000 or 1400) (mm): ", "");
+    while (count(begin(p.valid_diameters), end(p.valid_diameters), p.diameter) <= 0) {
+        cout << "*Diameter must be 500, 700, 1000 or 1400, please repeat" << endl;
+        p.diameter = GetCorrectNumber(in, 500, 1400, "diameter (500, 700, 1000 or 1400) (mm): ", "");
+    }    
     p.status = GetCorrectNumber(in, 0, 1, "status (1 - work, 0 - in repair): ", "");   
     return in;
 }

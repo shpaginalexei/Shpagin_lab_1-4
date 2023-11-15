@@ -229,7 +229,7 @@ void BatchEditing(PTS& pts, const PTS::ObjectType obj) {
     }
     pts.short_view(obj, IDs);
 
-    int max_id = obj == PTS::PIPE ? Pipe::get_maxid() : Station::get_maxid();
+    int max_id = obj == PTS::PIPE ? Pipe::get_max_id() : Station::get_max_id();
     IDs = SelectSpecificIDs(IDs, max_id);
 
     if (!IDs.empty()) {
@@ -285,6 +285,76 @@ void EditMenu(PTS& pts, const PTS::ObjectType obj) {
     case 0:
     default: 
     { 
+        system("cls");
+        break;
+    }
+    }
+}
+
+void AddEdge(PTS& pts) {
+
+    if (!SystemHasObjects(pts, PTS::STATION)) {
+        return;
+    }
+
+    cout << "Free Pipes:\n";
+    if (!pts.get_free_pipes(pts.get_ids_objects(PTS::PIPE)).empty()) {
+        pts.short_view(PTS::PIPE, pts.get_free_pipes(pts.get_ids_objects(PTS::PIPE)));
+    }
+    else {
+        cout << "*No free " << pts.to_string(PTS::PIPE) << "s" << endl;
+    }
+    cout << "Stations:\n";
+    pts.short_view(PTS::STATION, pts.get_ids_objects(PTS::STATION));
+
+    int source = GetCorrectNumber(cin, 1, Station::get_max_id(), "source station id: ", "");
+    int sink = GetCorrectNumber(cin, 1, Station::get_max_id(), "sink station id: ", "");
+    int diameter = GetCorrectNumber(cin, 500, 1400, "diameter (500, 700, 1000 or 1400) (mm): ", "");
+    while (count(begin(Pipe::valid_diameters), end(Pipe::valid_diameters), diameter) <= 0) {
+        cout << "*Diameter must be 500, 700, 1000 or 1400, please repeat" << endl;
+        diameter = GetCorrectNumber(cin, 500, 1400, "diameter (500, 700, 1000 or 1400) (mm): ", "");
+    }
+    pts.add_edge(source, sink, diameter);
+}
+
+void GraphMenu(PTS& pts) {
+    cout << "-> Graph " << endl;
+
+    const int graph_menu_size = 3;
+    const std::string graph_menu[graph_menu_size] = {
+    "     1. Add Edge",
+    "     2. Topological Sorting",
+    "     0. Return"
+    };
+    Print(graph_menu, graph_menu_size);
+    int graph = GetCorrectNumber(cin, 0, 2, ">> ", "");
+    system("cls");
+    cout << "-> Graph " << endl;
+    switch (graph) {
+    case 1:
+    {
+        cout << "     -> Add Edge" << endl;
+        AddEdge(pts);
+        BackToMenu();
+        break;
+    }
+    case 2:
+    {
+        cout << "     -> Topological Sorting" << endl;
+        auto vec = pts.TopologicalSort();
+        if (!vec.empty()) {
+            cout << "Result: ";
+            for (auto& i : vec) {
+                cout << i << " ";
+            }
+            cout << "\n";
+        }
+        BackToMenu();
+        break;
+    }
+    case 0:
+    default:
+    {
         system("cls");
         break;
     }
