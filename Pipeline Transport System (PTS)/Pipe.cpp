@@ -19,6 +19,29 @@ int Pipe::get_max_id() {
     return max_id;
 }
 
+int Pipe::get_correct_diameter() {
+    int diameter = GetCorrectNumber(cin, 500, 1400, "diameter (" + Pipe::get_valid_diameters_string() + ") (mm): ", "");
+    while (count(begin(valid_diameters), end(valid_diameters), diameter) <= 0) {
+        cout << "*Diameter must be " + Pipe::get_valid_diameters_string() + ", please repeat" << endl;
+        diameter = GetCorrectNumber(cin, 500, 1400, "diameter (" + Pipe::get_valid_diameters_string() + ") (mm): ", "");
+    }
+    return diameter;
+}
+
+string Pipe::get_valid_diameters_string() {
+    string res;
+    if (size(valid_diameters) > 2) {
+        for (std::size_t i = 0; i < size(valid_diameters) - 2; ++i) {
+            res += std::to_string(valid_diameters[i]) + ", ";
+        }
+    }
+    if (size(valid_diameters) > 1) {
+        res += std::to_string(valid_diameters[size(valid_diameters) - 2]) + " or ";
+    }   
+    res += std::to_string(valid_diameters[size(valid_diameters) - 1]);
+    return res;
+}
+
 Pipe::Pipe() {
     id = ++max_id;
 }
@@ -52,17 +75,12 @@ void Pipe::change_status(const EditStatusType type) {
     }
 }
 
-
 istream& operator>> (istream& in, Pipe& p) {
     cout << "name: ";
     InputLine(in, p.name);
     p.lenght = GetCorrectNumber(in, 0.000001, DBL_MAX,
         "lenght (km): ", "**The number must be positive, please repeat\n");
-    p.diameter = GetCorrectNumber(in, 500, 1400, "diameter (500, 700, 1000 or 1400) (mm): ", "");
-    while (count(begin(p.valid_diameters), end(p.valid_diameters), p.diameter) <= 0) {
-        cout << "*Diameter must be 500, 700, 1000 or 1400, please repeat" << endl;
-        p.diameter = GetCorrectNumber(in, 500, 1400, "diameter (500, 700, 1000 or 1400) (mm): ", "");
-    }    
+    p.diameter = Pipe::get_correct_diameter();
     p.status = GetCorrectNumber(in, 0, 1, "status (1 - work, 0 - in repair): ", "");   
     return in;
 }

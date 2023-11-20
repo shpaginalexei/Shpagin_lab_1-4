@@ -1,7 +1,6 @@
 #include "PTS.h"
 #include <iostream>
 #include <fstream>
-#include <stack>
 
 using namespace std;
 
@@ -15,7 +14,7 @@ bool check_pipe_by_status(const Pipe& p, const bool status) {
 }
 
 bool check_pipe_by_diameter(const Pipe& p, const int diameter) {
-    return (count(begin(Pipe::valid_diameters), end(Pipe::valid_diameters), diameter) > 0) && (p.get_diameter() == diameter);
+    return (p.get_diameter() == diameter);
 }
 
 bool check_station_by_name(const Station& s, const string substring) {
@@ -58,11 +57,29 @@ void PTS::add(const ObjectType obj) {
 void PTS::remove(const ObjectType obj, const int ID) {
     switch (obj) {
     case PIPE: { 
-        pipes.erase(ID); 
+        if (pipes.contains(ID)) {
+            pipes.erase(ID);
+        }        
+        if (edges.contains(ID)) {
+            cout << "*Edge " << edges.at(ID) << " | pipe - " << ID << " was deleted\n";
+            edges.erase(ID);
+        }
         break; 
     }
     case STATION: { 
-        stations.erase(ID); 
+        if (stations.contains(ID)) {
+            stations.erase(ID);
+        }
+        auto it = edges.cbegin();
+        while (it != edges.cend()) {
+            if (it->second.source == ID || it->second.sink == ID) {
+                cout << "*Edge " << it->second << " | pipe - " << it->first << " was deleted\n";
+                it = edges.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
         break; 
     }
     }
@@ -139,22 +156,33 @@ unordered_set<int> PTS::get_free_pipes(const unordered_set<int>& IDs) const {
     return free_IDs;
 }
 
-void PTS::add_edge(const int sourceID, const int sinkID, const int pipe_diameter) {
-    if (stations.contains(sourceID) && stations.contains(sinkID)) {
-        auto pipeIDs = search(check_pipe_by_diameter, pipe_diameter);
+void PTS::add_edge(const int source, const int sink, const int diameter) {
+    if (stations.contains(source) && stations.contains(sink)) {
+        auto pipeIDs = search(check_pipe_by_diameter, diameter);
         pipeIDs = get_free_pipes(pipeIDs);
         if (!pipeIDs.empty()) {
             auto pipeID = pipeIDs.begin();
-            edges.insert({ *pipeID, Edge(sourceID, sinkID, *pipeID) });
+            edges.insert({ *pipeID, Edge(source, sink) });
         }
         else {
             cout << "\n*There are no free pipes with this diameter"
-                 << "\nPlease, add new pipe with diameter equal to " << pipe_diameter << " mm" << endl;
+                 << "\nPlease, add new pipe with diameter equal to " << diameter << " mm" << endl;
             add(PIPE);
-            add_edge(sourceID, sinkID, pipe_diameter);         
+            add_edge(source, sink, diameter);         
         }
     }
     changed = true;
+}
+
+void PTS::view_edges() const {
+    if (!edges.empty()) {
+        for (const auto& [pipe_id, e] : edges) {
+            cout << e << " | pipe - " << pipe_id << endl;
+        }
+    }
+    else {
+        cout << "**System has no Edges\n";
+    }
 }
 
 bool PTS::hasCycle(int vertex, unordered_set<int>& visited, unordered_set<int>& recStack) const {
@@ -162,11 +190,11 @@ bool PTS::hasCycle(int vertex, unordered_set<int>& visited, unordered_set<int>& 
     recStack.insert(vertex);
 
     for (const auto& [pipe_id, edge] : edges) {
-        if (edge.source_ID == vertex) {
-            if (recStack.find(edge.sink_ID) != recStack.end()) {
+        if (edge.source == vertex) {
+            if (recStack.find(edge.sink) != recStack.end()) {
                 return true;
             }
-            if (visited.find(edge.sink_ID) == visited.end() && hasCycle(edge.sink_ID, visited, recStack)) {
+            if (visited.find(edge.sink) == visited.end() && hasCycle(edge.sink, visited, recStack)) {
                 return true;
             }
         }
@@ -181,7 +209,7 @@ bool PTS::isDAG() const {
     unordered_set<int> recStack;
 
     for (const auto& [pipe_id, edge] : edges) {
-        int vertex = edge.source_ID;
+        int vertex = edge.source;
         if (visited.find(vertex) == visited.end() && hasCycle(vertex, visited, recStack)) {
             return false;
         }
@@ -192,8 +220,7 @@ bool PTS::isDAG() const {
 
 void PTS::dfsTopologicalSort(int v, vector<bool>& visited, vector<int>& result, vector<vector<int>>& adj) const {
     visited[v] = true;
-    size_t V = stations.size();
-    for (int u = 0; u < V; u++) {
+    for (int u = 0; u < adj[v].size(); u++) {
         if (adj[v][u] == 1 && !visited[u])
             dfsTopologicalSort(u, visited, result, adj);
     }
@@ -201,8 +228,12 @@ void PTS::dfsTopologicalSort(int v, vector<bool>& visited, vector<int>& result, 
 }
 
 vector<int> PTS::TopologicalSort() const {
-    if (!isDAG()) {
-        cout << "\n**The graph contains a cycle. Topological sorting is not possible" << endl;
+    if (edges.empty()) {
+        cout << "**System has no Edges. Topological sorting is not possible" << endl;
+        return vector<int>();
+    }
+    else if (!isDAG()) {
+        cout << "**The graph contains a cycle. Topological sorting is not possible" << endl;
         return vector<int>();
     }
 
@@ -213,7 +244,7 @@ vector<int> PTS::TopologicalSort() const {
     vector<vector<int>> adj;
     adj.resize(V, vector<int>(V, 0));
     for (auto& [pipe_id, edge] : edges) {
-        adj[edge.source_ID - 1][edge.sink_ID - 1] = 1;
+        adj[edge.source - 1][edge.sink - 1] = 1;
     }
 
     visited.assign(V, false);
@@ -224,7 +255,7 @@ vector<int> PTS::TopologicalSort() const {
     }
     reverse(result.begin(), result.end());
 
-    return result;
+   return result;
 }
 
 void PTS::clear_system() {
@@ -270,8 +301,8 @@ void PTS::save_to_file() {
         for (auto& [id, s] : stations) {
             file << s;
         }
-        for (auto& [id, e] :edges) {
-            file << e;
+        for (auto& [pipe_id, e] :edges) {
+            file << e << " " << pipe_id << endl;
         }
         cout << file_name << ": " << count_pipes << " Pipes and "
              << count_stations << " Stations saved successfully!" << endl;
@@ -295,7 +326,7 @@ void PTS::load_from_file() {
         Edge new_edge;
         int count_pipes;
         int count_stations;
-        int count_edges;
+        int count_edges; int pipe_id;
 
         file >> count_pipes >> count_stations >> count_edges;
         for (int i = 0; i < count_pipes; i++) {
@@ -306,10 +337,10 @@ void PTS::load_from_file() {
             file >> new_station;
             stations.insert({ new_station.get_id(), new_station });
         }
-        edges.reserve(count_edges);
         for (int i = 0; i < count_edges; i++) {
             file >> new_edge;
-            edges.insert({ new_edge.pipe_ID, new_edge });
+            file >> pipe_id;
+            edges.insert({ pipe_id, new_edge });
         }
 
         cout << file_name << ": " << count_pipes << " Pipes and "

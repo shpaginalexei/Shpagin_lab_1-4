@@ -4,12 +4,11 @@
 
 struct Edge
 {
-	int source_ID;
-    int sink_ID;
-	int pipe_ID;
+	int source;
+    int sink;
 
 	Edge();
-	Edge(const int, const int, const int);
+	Edge(const int, const int);
 
 	friend std::ostream& operator<< (std::ostream&, const Edge&);
 

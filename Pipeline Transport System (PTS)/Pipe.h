@@ -26,14 +26,16 @@ public:
 	friend std::ifstream& operator>> (std::ifstream&, Pipe&);
 	friend std::ofstream& operator<< (std::ofstream&, const Pipe&);
 
-	const static int valid_diameters[4];
+	static int get_correct_diameter();
+	static std::string get_valid_diameters_string();
 
 private:
 	static int max_id;
 	int id;
 	std::string name = "";
 	double lenght = 0;
-	int diameter = 0;	
+	int diameter = 0;
+	const static int valid_diameters[4];
 	bool status = false;
 };
 

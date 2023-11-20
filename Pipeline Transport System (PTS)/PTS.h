@@ -6,6 +6,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <stack>
+#include <list>
 
 
 class PTS
@@ -41,9 +43,7 @@ public:
 
 	// Graph
 	void add_edge(const int, const int, const int);
-	bool hasCycle(int, std::unordered_set<int>&, std::unordered_set<int>&) const;
-	bool isDAG() const;
-	void dfsTopologicalSort(int, std::vector<bool>&, std::vector<int>&, std::vector<std::vector<int>>&) const;
+	void view_edges() const;
 	std::vector<int> TopologicalSort() const;
 
 private:
@@ -52,6 +52,10 @@ private:
 	std::unordered_map<int, Station> stations{};
 
 	std::unordered_map<int, Edge> edges{};
+
+	bool hasCycle(int, std::unordered_set<int>&, std::unordered_set<int>&) const;
+	bool isDAG() const;
+	void dfsTopologicalSort(int, std::vector<bool>&, std::vector<int>&, std::vector<std::vector<int>>&) const;
 
 	void clear_system();
 	bool changed = false;

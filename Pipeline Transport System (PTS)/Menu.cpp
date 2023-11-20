@@ -302,32 +302,29 @@ void AddEdge(PTS& pts) {
         pts.short_view(PTS::PIPE, pts.get_free_pipes(pts.get_ids_objects(PTS::PIPE)));
     }
     else {
-        cout << "*No free " << pts.to_string(PTS::PIPE) << "s" << endl;
+        cout << "*No free Pipes" << endl;
     }
     cout << "Stations:\n";
     pts.short_view(PTS::STATION, pts.get_ids_objects(PTS::STATION));
 
     int source = GetCorrectNumber(cin, 1, Station::get_max_id(), "source station id: ", "");
     int sink = GetCorrectNumber(cin, 1, Station::get_max_id(), "sink station id: ", "");
-    int diameter = GetCorrectNumber(cin, 500, 1400, "diameter (500, 700, 1000 or 1400) (mm): ", "");
-    while (count(begin(Pipe::valid_diameters), end(Pipe::valid_diameters), diameter) <= 0) {
-        cout << "*Diameter must be 500, 700, 1000 or 1400, please repeat" << endl;
-        diameter = GetCorrectNumber(cin, 500, 1400, "diameter (500, 700, 1000 or 1400) (mm): ", "");
-    }
+    int diameter = Pipe::get_correct_diameter();
     pts.add_edge(source, sink, diameter);
 }
 
 void GraphMenu(PTS& pts) {
     cout << "-> Graph " << endl;
 
-    const int graph_menu_size = 3;
+    const int graph_menu_size = 4;
     const std::string graph_menu[graph_menu_size] = {
     "     1. Add Edge",
-    "     2. Topological Sorting",
+    "     2. View Edges",
+    "     3. Topological Sorting",
     "     0. Return"
     };
     Print(graph_menu, graph_menu_size);
-    int graph = GetCorrectNumber(cin, 0, 2, ">> ", "");
+    int graph = GetCorrectNumber(cin, 0, 3, ">> ", "");
     system("cls");
     cout << "-> Graph " << endl;
     switch (graph) {
@@ -339,6 +336,13 @@ void GraphMenu(PTS& pts) {
         break;
     }
     case 2:
+    {
+        cout << "     -> View Edges" << endl;
+        pts.view_edges();
+        BackToMenu();
+        break;
+    }
+    case 3:
     {
         cout << "     -> Topological Sorting" << endl;
         auto vec = pts.TopologicalSort();
