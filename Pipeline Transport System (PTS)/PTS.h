@@ -6,8 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <stack>
-#include <list>
+#include <set>
 
 
 class PTS
@@ -55,8 +54,7 @@ private:
 
 	bool hasCycle(int, std::unordered_set<int>&, std::unordered_set<int>&) const;
 	bool isDAG() const;
-	void dfsTopologicalSort(int, std::vector<bool>&, std::vector<int>&, std::vector<std::vector<int>>&) const;
-
+	void dfsTopologicalSort(int, std::vector<bool>&, std::vector<int>&, std::vector<std::vector<bool>>&, std::set<int>&) const;
 	void clear_system();
 	bool changed = false;
 	std::string file_name = "";

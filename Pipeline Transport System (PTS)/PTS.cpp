@@ -1,6 +1,7 @@
 #include "PTS.h"
 #include <iostream>
 #include <fstream>
+#include <set>
 
 using namespace std;
 
@@ -170,8 +171,12 @@ void PTS::add_edge(const int source, const int sink, const int diameter) {
             add(PIPE);
             add_edge(source, sink, diameter);         
         }
+        changed = true;
     }
-    changed = true;
+    else {
+        cout << "\n**It's impossible to create an edge with such vertices\n";
+    }
+    
 }
 
 void PTS::view_edges() const {
@@ -218,13 +223,32 @@ bool PTS::isDAG() const {
     return true;
 }
 
-void PTS::dfsTopologicalSort(int v, vector<bool>& visited, vector<int>& result, vector<vector<int>>& adj) const {
+int GetValueByIndex(set<int> S, int I) {
+    auto it = S.begin();
+    advance(it, I);
+    return *it;
+}
+
+void PTS::dfsTopologicalSort(int v, vector<bool>& visited, vector<int>& result, vector<vector<bool>>& adj, set<int>& vertexIDs) const {
     visited[v] = true;
     for (int u = 0; u < adj[v].size(); u++) {
-        if (adj[v][u] == 1 && !visited[u])
-            dfsTopologicalSort(u, visited, result, adj);
+        if (adj[v][u] && !visited[u]) {
+            dfsTopologicalSort(u, visited, result, adj, vertexIDs);
+        }
     }
-    result.push_back(v + 1);
+
+    result.push_back(GetValueByIndex(vertexIDs, v));
+}
+
+int GetIndexByValue(set<int> S, int K) {
+    int Index = 0;
+    for (auto u : S) {
+        if (u == K) {
+            return Index;
+        }
+        Index++;
+    }
+    return -1;
 }
 
 vector<int> PTS::TopologicalSort() const {
@@ -237,21 +261,26 @@ vector<int> PTS::TopologicalSort() const {
         return vector<int>();
     }
 
-    vector<bool> visited;
-    vector<int> result;
-    size_t V = stations.size();
-
-    vector<vector<int>> adj;
-    adj.resize(V, vector<int>(V, 0));
-    for (auto& [pipe_id, edge] : edges) {
-        adj[edge.source - 1][edge.sink - 1] = 1;
+    set<int> vertexIDs;
+    for (const auto& [pipe_id, e] : edges) {
+        vertexIDs.insert(e.source);
+        vertexIDs.insert(e.sink);
     }
 
-    visited.assign(V, false);
-    result.clear();
+    size_t V = vertexIDs.size();
+
+    vector<vector<bool>> adj(V, vector<bool>(V, false));
+    for (auto& [pipe_id, e] : edges) {
+        adj[GetIndexByValue(vertexIDs, e.source)][GetIndexByValue(vertexIDs, e.sink)] = true;
+    }
+
+    vector<bool> visited(V, false);
+    vector<int> result;
+
     for (int i = 0; i < V; ++i) {
-        if (!visited[i])
-            dfsTopologicalSort(i, visited, result, adj);
+        if (!visited[i]) {
+            dfsTopologicalSort(i, visited, result, adj, vertexIDs);
+        }
     }
     reverse(result.begin(), result.end());
 
