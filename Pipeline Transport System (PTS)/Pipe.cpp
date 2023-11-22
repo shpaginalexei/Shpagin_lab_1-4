@@ -113,3 +113,12 @@ ofstream& operator<< (ofstream& fout, const Pipe& p) {
          << p.status << endl;
     return fout;
 }
+
+void initPipeWithDiameter(Pipe& p, const int d) {
+    cout << "name: ";
+    InputLine(cin, p.name);
+    p.lenght = GetCorrectNumber(cin, 0.000001, DBL_MAX,
+        "lenght (km): ", "**The number must be positive, please repeat\n");
+    p.diameter = d;
+    p.status = GetCorrectNumber(cin, 0, 1, "status (1 - work, 0 - in repair): ", "");   
+}

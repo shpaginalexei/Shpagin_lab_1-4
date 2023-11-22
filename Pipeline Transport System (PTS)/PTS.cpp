@@ -168,8 +168,10 @@ void PTS::add_edge(const int source, const int sink, const int diameter) {
         else {
             cout << "\n*There are no free pipes with this diameter"
                  << "\nPlease, add new pipe with diameter equal to " << diameter << " mm" << endl;
-            add(PIPE);
-            add_edge(source, sink, diameter);         
+            Pipe p;
+            inputPipeWithoutDiameter(p, diameter);
+            pipes.insert({ p.get_id(), p });
+            edges.insert({ p.get_id(), Edge(source, sink)});         
         }
         changed = true;
     }
