@@ -28,7 +28,7 @@ public:
 
 	static int get_correct_diameter();
 	static std::string get_valid_diameters_string();
-	friend void initPipeWithDiameter(Pipe&, const int);
+	friend void inputPipeWithoutDiameter(Pipe&, const int);
 
 private:
 	static int max_id;

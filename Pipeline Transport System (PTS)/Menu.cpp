@@ -313,18 +313,28 @@ void AddEdge(PTS& pts) {
     pts.add_edge(source, sink, diameter);
 }
 
+void RemoveEdge(PTS& pts) {
+    if (!SystemHasObjects(pts, PTS::STATION)) {
+        return;
+    }
+    pts.view_edges();
+    int pipe_id = GetCorrectNumber(cin, 1, Pipe::get_max_id(), "Select edge (by pipe ID): ", "");
+    pts.remove_edge(pipe_id);
+}
+
 void GraphMenu(PTS& pts) {
     cout << "-> Graph " << endl;
 
-    const int graph_menu_size = 4;
+    const int graph_menu_size = 5;
     const std::string graph_menu[graph_menu_size] = {
     "     1. Add Edge",
     "     2. View Edges",
-    "     3. Topological Sorting",
+    "     3. Remove Edge",
+    "     4. Topological Sorting",
     "     0. Return"
     };
     Print(graph_menu, graph_menu_size);
-    int graph = GetCorrectNumber(cin, 0, 3, ">> ", "");
+    int graph = GetCorrectNumber(cin, 0, 4, ">> ", "");
     system("cls");
     cout << "-> Graph " << endl;
     switch (graph) {
@@ -334,7 +344,7 @@ void GraphMenu(PTS& pts) {
         AddEdge(pts);
         BackToMenu();
         break;
-    }
+    }    
     case 2:
     {
         cout << "     -> View Edges" << endl;
@@ -343,6 +353,13 @@ void GraphMenu(PTS& pts) {
         break;
     }
     case 3:
+    {
+        cout << "     -> Remove Edge" << endl;
+        RemoveEdge(pts);
+        BackToMenu();
+        break;
+    }
+    case 4:
     {
         cout << "     -> Topological Sorting" << endl;
         auto vec = pts.TopologicalSort();

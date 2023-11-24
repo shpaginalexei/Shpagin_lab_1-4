@@ -192,6 +192,12 @@ void PTS::view_edges() const {
     }
 }
 
+void PTS::remove_edge(const int pipe_id) {
+    if (edges.contains(pipe_id)) {
+        edges.erase(pipe_id);
+    }
+}
+
 bool PTS::hasCycle(int vertex, unordered_set<int>& visited, unordered_set<int>& recStack) const {
     visited.insert(vertex);
     recStack.insert(vertex);

@@ -114,7 +114,7 @@ ofstream& operator<< (ofstream& fout, const Pipe& p) {
     return fout;
 }
 
-void initPipeWithDiameter(Pipe& p, const int d) {
+void inputPipeWithoutDiameter(Pipe& p, const int d) {
     cout << "name: ";
     InputLine(cin, p.name);
     p.lenght = GetCorrectNumber(cin, 0.000001, DBL_MAX,

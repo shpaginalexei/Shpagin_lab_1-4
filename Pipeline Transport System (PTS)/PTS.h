@@ -43,6 +43,7 @@ public:
 	// Graph
 	void add_edge(const int, const int, const int);
 	void view_edges() const;
+	void remove_edge(const int);
 	std::vector<int> TopologicalSort() const;
 
 private:
