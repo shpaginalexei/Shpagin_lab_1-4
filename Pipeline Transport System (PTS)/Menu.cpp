@@ -292,11 +292,9 @@ void EditMenu(PTS& pts, const PTS::ObjectType obj) {
 }
 
 void AddEdge(PTS& pts) {
-
     if (!SystemHasObjects(pts, PTS::STATION)) {
         return;
     }
-
     cout << "Free Pipes:\n";
     if (!pts.get_free_pipes(pts.get_ids_objects(PTS::PIPE)).empty()) {
         pts.short_view(PTS::PIPE, pts.get_free_pipes(pts.get_ids_objects(PTS::PIPE)));
@@ -314,7 +312,8 @@ void AddEdge(PTS& pts) {
 }
 
 void RemoveEdge(PTS& pts) {
-    if (!SystemHasObjects(pts, PTS::STATION)) {
+    if (!pts.has_edges()) {
+        cout << "**System has no Edges\n";
         return;
     }
     pts.view_edges();
@@ -323,35 +322,58 @@ void RemoveEdge(PTS& pts) {
 }
 
 void CalcMaxFlow(PTS& pts) {
-    if (!SystemHasObjects(pts, PTS::STATION)) {
+    if (!pts.has_edges()) {
+        cout << "**System has no Edges\n";
         return;
     }
+    cout << "Edges:\n";
     pts.view_edges();
     int source = GetCorrectNumber(cin, 1, Station::get_max_id(), "source station id: ", "");
     int sink = GetCorrectNumber(cin, 1, Station::get_max_id(), "sink station id: ", "");
 
     Graph graph = pts.init_graph();
     auto max_flow = graph.MaxFlow(source, sink);
-    if (max_flow != -1) {
+    if (max_flow >= 0) {
         cout << "\nMax flow: " << max_flow  << " kg/s"
              << "\n          " << max_flow / 0.657 * 3600 * 24 / pow(10, 6) << " MSCMD (Million Standard Cubic Meter per Day)" << endl;
+    }
+}
+
+void CalcShortestPath(PTS& pts) {
+    if (!pts.has_edges()) {
+        cout << "**System has no Edges\n";
+        return;
+    }
+    pts.view_edges();
+    int start = GetCorrectNumber(cin, 1, Station::get_max_id(), "start station id: ", "");
+    int stop = GetCorrectNumber(cin, 1, Station::get_max_id(), "end station id: ", "");
+
+    Graph graph = pts.init_graph();
+    auto path = graph.ShortestPath(start, stop);
+    if (!path.empty()) {
+        cout << "\nShortest Path: ";
+        for (const auto& v : path) {
+            cout << v << " ";
+        }
+        cout << "\nLenght: " << graph.ShortestPathLength(path) << "\n";
     }
 }
 
 void GraphMenu(PTS& pts) {
     cout << "-> Graph " << endl;
 
-    const int graph_menu_size = 6;
+    const int graph_menu_size = 7;
     const std::string graph_menu[graph_menu_size] = {
     "     1. Add Edge",
     "     2. View Edges",
     "     3. Remove Edge",
     "     4. Topological Sorting",
     "     5. Max Flow",
+    "     6. Shortest Path",
     "     0. Return"
     };
     Print(graph_menu, graph_menu_size);
-    int graph = GetCorrectNumber(cin, 0, 5, ">> ", "");
+    int graph = GetCorrectNumber(cin, 0, 6, ">> ", "");
     system("cls");
     cout << "-> Graph " << endl;
     switch (graph) {
@@ -395,6 +417,13 @@ void GraphMenu(PTS& pts) {
     {
         cout << "     -> Max Flow" << endl;
         CalcMaxFlow(pts);
+        BackToMenu();
+        break;
+    }
+    case 6:
+    {
+        cout << "     ->Shortest Path" << endl;
+        CalcShortestPath(pts);
         BackToMenu();
         break;
     }

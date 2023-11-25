@@ -6,8 +6,6 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
-//#include <vector>
-//#include <set>
 
 
 class PTS
@@ -45,6 +43,7 @@ public:
 	void add_edge(const int, const int, const int);
 	void view_edges() const;
 	void remove_edge(const int);
+	bool has_edges() const;
 	Graph init_graph() const;
 
 private:

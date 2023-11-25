@@ -1,8 +1,6 @@
 #include "PTS.h"
 #include <iostream>
 #include <fstream>
-//#include <set>
-//#include <queue>
 
 
 using namespace std;
@@ -178,7 +176,7 @@ void PTS::add_edge(const int source, const int sink, const int diameter) {
         changed = true;
     }
     else {
-        cout << "\n**It's impossible to create an edge with such vertices\n";
+        cout << "\n**There are no stations with such IDs\n";
     }
     
 }
@@ -196,8 +194,16 @@ void PTS::view_edges() const {
 
 void PTS::remove_edge(const int pipe_id) {
     if (edges.contains(pipe_id)) {
+        cout << "*Edge " << edges.at(pipe_id) << " | pipe - " << pipe_id << " was deleted\n";
         edges.erase(pipe_id);
     }
+    else {
+        cout << "pipe_id::" << pipe_id << " *No such Edge exists\n";
+    }
+}
+
+bool PTS::has_edges() const {
+    return !edges.empty();
 }
 
 Graph PTS::init_graph() const {

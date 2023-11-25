@@ -29,7 +29,8 @@ public:
 
 	std::vector<int> TopologicalSort() const;
 	double MaxFlow(const int, const int) const;
-	// std::vector<int> ShortestPath() const;
+	std::vector<int> ShortestPath(const int, const int) const;
+	double ShortestPathLength(const std::vector<int>&) const;
 
 private:
 

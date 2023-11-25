@@ -195,3 +195,80 @@ double Graph::MaxFlow(const int source, const int sink) const {
 
     return maxFlow;
 }
+
+vector<int> Graph::ShortestPath(const int start, const int end) const {
+    if (edges.empty()) {
+        cout << "**System has no Edges. It's not possible to find the shortest path" << endl;
+        return vector<int>();
+    }
+
+    if (!(vertices.contains(start) && vertices.contains(end))) {
+        cout << "\n**There are no vertices with such IDs\n";
+        return vector<int>();
+    }
+
+    int s = GetIndexByValue(vertices, start);
+    int t = GetIndexByValue(vertices, end);
+
+    vector<double> distance(V, DBL_MAX);
+    distance[s] = 0;
+
+    vector<int> predecessor(V, -1);
+
+    set<pair<double, int>> pq;
+    pq.insert({ 0, s });
+
+    while (!pq.empty()) {
+        int u = pq.begin()->second;
+        pq.erase(pq.begin());
+
+        for (int v = 0; v < V; ++v) {
+            if (adj[u][v]) {
+                if (distance[v] > distance[u] + weight[u][v]) {
+                    distance[v] = distance[u] + weight[u][v];
+                    predecessor[v] = u;
+                    pq.insert({ distance[v], v });
+                }
+            }
+        }
+    }
+
+    vector<int> shortestPath;
+    int current = t;
+    while (current != s) {
+        shortestPath.push_back(GetValueByIndex(vertices, current));
+        if (predecessor[current] != -1) {
+            current = predecessor[current];
+        }
+        else {
+            cout << "\n*No path between vertices " << start << " and " << end << "\n\n";
+            return vector<int>();
+        }
+    }
+    shortestPath.push_back(GetValueByIndex(vertices, s));
+    reverse(shortestPath.begin(), shortestPath.end());
+
+    return shortestPath;
+}
+
+double Graph::ShortestPathLength(const vector<int>& path) const {
+    if (path.size() < 2) {
+        cerr << "**Invalid path" << endl;
+        return 0.0;
+    }
+
+    double length = 0.0;
+    for (size_t i = 0; i < path.size() - 1; ++i) {
+        int start = GetIndexByValue(vertices, path[i]);
+        int end = GetIndexByValue(vertices, path[i + 1]);
+
+        if (start >= weight.size() || end >= weight.size() || !weight[start][end]) {
+            cerr << "**Edge not found between " << start << " and " << end << endl;
+            return 0.0;
+        }
+
+        length += weight[start][end];
+    }
+
+    return length;
+}
