@@ -5,8 +5,9 @@
 #include "Utilities.h"
 #include <string>
 #include <unordered_map>
-#include <vector>
-#include <set>
+#include <unordered_set>
+//#include <vector>
+//#include <set>
 
 
 class PTS
@@ -44,7 +45,7 @@ public:
 	void add_edge(const int, const int, const int);
 	void view_edges() const;
 	void remove_edge(const int);
-	std::vector<int> TopologicalSort() const;
+	Graph init_graph() const;
 
 private:
 
@@ -53,9 +54,6 @@ private:
 
 	std::unordered_map<int, Edge> edges{};
 
-	bool hasCycle(int, std::unordered_set<int>&, std::unordered_set<int>&) const;
-	bool isDAG() const;
-	void dfsTopologicalSort(int, std::vector<bool>&, std::vector<int>&, std::vector<std::vector<bool>>&, std::set<int>&) const;
 	void clear_system();
 	bool changed = false;
 	std::string file_name = "";

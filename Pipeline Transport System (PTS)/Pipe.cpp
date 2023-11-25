@@ -1,9 +1,11 @@
+#define _USE_MATH_DEFINES
 #include "Pipe.h"
 #include "Utilities.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <unordered_set>
+#include <cmath>
 
 using namespace std;
 
@@ -64,6 +66,29 @@ bool Pipe::get_status() const {
 
 string Pipe::get_status_string() const {
     return status ? "work" : "in repair";
+}
+
+double Pipe::get_capasity() const {
+    double L = lenght * 1000.0;      // lenght                  m
+    double D = diameter / 1000.0;    // diameter                m
+    double H = 0.015;                // pipe thickness          m
+    double sigma = 500 * pow(10, 6); // steel strength          N/m^2
+    int V_max = 25;                  // max permissible speed   m/s
+    double h = 0.03 / 1000.0;        // roughness               m
+    double R = 8.31;                 // gas constant            J/(mole * K)
+    int T = 293;                     // temperature             K    
+    double mu = 0.016;               // molar mass              kg/mole
+    double N = pow(10, 6);           // surface concentration
+    
+    double capasity = (sigma * H / D) / 
+        sqrt(pow((4 * R * T)/(mu * M_PI * pow(D, 2) * V_max) , 2) + (64 * L * N * R * T * pow(h, 2))/(pow(M_PI, 2) * mu * pow(D, 5)));
+
+    //return status ? capasity : 0.0; // kg/s
+    return status ? lenght : 0.0;
+}
+
+double Pipe::get_weight() const {
+    return status ? lenght : DBL_MAX;
 }
 
 void Pipe::change_status(const EditStatusType type) {

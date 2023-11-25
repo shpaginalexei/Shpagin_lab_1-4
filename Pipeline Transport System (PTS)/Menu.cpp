@@ -318,23 +318,40 @@ void RemoveEdge(PTS& pts) {
         return;
     }
     pts.view_edges();
-    int pipe_id = GetCorrectNumber(cin, 1, Pipe::get_max_id(), "Select edge (by pipe ID): ", "");
+    int pipe_id = GetCorrectNumber(cin, 1, Pipe::get_max_id(), "Select edge (by pipe id): ", "");
     pts.remove_edge(pipe_id);
+}
+
+void CalcMaxFlow(PTS& pts) {
+    if (!SystemHasObjects(pts, PTS::STATION)) {
+        return;
+    }
+    pts.view_edges();
+    int source = GetCorrectNumber(cin, 1, Station::get_max_id(), "source station id: ", "");
+    int sink = GetCorrectNumber(cin, 1, Station::get_max_id(), "sink station id: ", "");
+
+    Graph graph = pts.init_graph();
+    auto max_flow = graph.MaxFlow(source, sink);
+    if (max_flow != -1) {
+        cout << "\nMax flow: " << max_flow  << " kg/s"
+             << "\n          " << max_flow / 0.657 * 3600 * 24 / pow(10, 6) << " MSCMD (Million Standard Cubic Meter per Day)" << endl;
+    }
 }
 
 void GraphMenu(PTS& pts) {
     cout << "-> Graph " << endl;
 
-    const int graph_menu_size = 5;
+    const int graph_menu_size = 6;
     const std::string graph_menu[graph_menu_size] = {
     "     1. Add Edge",
     "     2. View Edges",
     "     3. Remove Edge",
     "     4. Topological Sorting",
+    "     5. Max Flow",
     "     0. Return"
     };
     Print(graph_menu, graph_menu_size);
-    int graph = GetCorrectNumber(cin, 0, 4, ">> ", "");
+    int graph = GetCorrectNumber(cin, 0, 5, ">> ", "");
     system("cls");
     cout << "-> Graph " << endl;
     switch (graph) {
@@ -362,7 +379,8 @@ void GraphMenu(PTS& pts) {
     case 4:
     {
         cout << "     -> Topological Sorting" << endl;
-        auto vec = pts.TopologicalSort();
+        Graph graph = pts.init_graph();
+        auto vec = graph.TopologicalSort();
         if (!vec.empty()) {
             cout << "Result: ";
             for (auto& i : vec) {
@@ -370,6 +388,13 @@ void GraphMenu(PTS& pts) {
             }
             cout << "\n";
         }
+        BackToMenu();
+        break;
+    }
+    case 5:
+    {
+        cout << "     -> Max Flow" << endl;
+        CalcMaxFlow(pts);
         BackToMenu();
         break;
     }

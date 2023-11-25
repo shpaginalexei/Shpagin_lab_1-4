@@ -1,7 +1,9 @@
 #include "PTS.h"
 #include <iostream>
 #include <fstream>
-#include <set>
+//#include <set>
+//#include <queue>
+
 
 using namespace std;
 
@@ -188,7 +190,7 @@ void PTS::view_edges() const {
         }
     }
     else {
-        cout << "**System has no Edges\n";
+        cout << "*System has no Edges\n";
     }
 }
 
@@ -198,101 +200,8 @@ void PTS::remove_edge(const int pipe_id) {
     }
 }
 
-bool PTS::hasCycle(int vertex, unordered_set<int>& visited, unordered_set<int>& recStack) const {
-    visited.insert(vertex);
-    recStack.insert(vertex);
-
-    for (const auto& [pipe_id, edge] : edges) {
-        if (edge.source == vertex) {
-            if (recStack.find(edge.sink) != recStack.end()) {
-                return true;
-            }
-            if (visited.find(edge.sink) == visited.end() && hasCycle(edge.sink, visited, recStack)) {
-                return true;
-            }
-        }
-    }
-
-    recStack.erase(vertex);
-    return false;
-}
-
-bool PTS::isDAG() const {
-    unordered_set<int> visited;
-    unordered_set<int> recStack;
-
-    for (const auto& [pipe_id, edge] : edges) {
-        int vertex = edge.source;
-        if (visited.find(vertex) == visited.end() && hasCycle(vertex, visited, recStack)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-int GetValueByIndex(set<int> S, int I) {
-    auto it = S.begin();
-    advance(it, I);
-    return *it;
-}
-
-void PTS::dfsTopologicalSort(int v, vector<bool>& visited, vector<int>& result, vector<vector<bool>>& adj, set<int>& vertexIDs) const {
-    visited[v] = true;
-    for (int u = 0; u < adj[v].size(); u++) {
-        if (adj[v][u] && !visited[u]) {
-            dfsTopologicalSort(u, visited, result, adj, vertexIDs);
-        }
-    }
-
-    result.push_back(GetValueByIndex(vertexIDs, v));
-}
-
-int GetIndexByValue(set<int> S, int K) {
-    int Index = 0;
-    for (auto u : S) {
-        if (u == K) {
-            return Index;
-        }
-        Index++;
-    }
-    return -1;
-}
-
-vector<int> PTS::TopologicalSort() const {
-    if (edges.empty()) {
-        cout << "**System has no Edges. Topological sorting is not possible" << endl;
-        return vector<int>();
-    }
-    else if (!isDAG()) {
-        cout << "**The graph contains a cycle. Topological sorting is not possible" << endl;
-        return vector<int>();
-    }
-
-    set<int> vertexIDs;
-    for (const auto& [pipe_id, e] : edges) {
-        vertexIDs.insert(e.source);
-        vertexIDs.insert(e.sink);
-    }
-
-    size_t V = vertexIDs.size();
-
-    vector<vector<bool>> adj(V, vector<bool>(V, false));
-    for (auto& [pipe_id, e] : edges) {
-        adj[GetIndexByValue(vertexIDs, e.source)][GetIndexByValue(vertexIDs, e.sink)] = true;
-    }
-
-    vector<bool> visited(V, false);
-    vector<int> result;
-
-    for (int i = 0; i < V; ++i) {
-        if (!visited[i]) {
-            dfsTopologicalSort(i, visited, result, adj, vertexIDs);
-        }
-    }
-    reverse(result.begin(), result.end());
-
-   return result;
+Graph PTS::init_graph() const {
+    return Graph(edges, pipes);
 }
 
 void PTS::clear_system() {

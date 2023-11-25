@@ -12,7 +12,7 @@ public:
 	static int get_max_id();
 
 	int get_id() const;
-	std::string get_name() const;
+	std::string get_name() const;	
 	int get_diameter() const;
 	bool get_status() const;
 	std::string get_status_string() const;
@@ -29,6 +29,8 @@ public:
 	static int get_correct_diameter();
 	static std::string get_valid_diameters_string();
 	friend void inputPipeWithoutDiameter(Pipe&, const int);
+	double get_capasity() const;
+	double get_weight() const;
 
 private:
 	static int max_id;
