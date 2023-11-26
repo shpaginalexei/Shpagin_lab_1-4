@@ -401,15 +401,20 @@ void GraphMenu(PTS& pts) {
     case 4:
     {
         cout << "     -> Topological Sorting" << endl;
-        Graph graph = pts.init_graph();
-        auto vec = graph.TopologicalSort();
-        if (!vec.empty()) {
-            cout << "Result: ";
-            for (auto& i : vec) {
-                cout << i << " ";
-            }
-            cout << "\n";
+        if (!pts.has_edges()) {
+            cout << "**System has no Edges\n";
         }
+        else {
+            Graph graph = pts.init_graph();
+            auto vec = graph.TopologicalSort();
+            if (!vec.empty()) {
+                cout << "Result: ";
+                for (auto& i : vec) {
+                    cout << i << " ";
+                }
+                cout << "\n";
+            }
+        }        
         BackToMenu();
         break;
     }
@@ -457,7 +462,12 @@ bool CheckBeforeSave(PTS& pts) {
         }
     }
     else if (pts.has_saved_file()) {
-        if (GetCorrectNumber(cin, 0, 1, "Do you want to save in the same file? (1 - yes, 0 - no): ", "") == 0) {
+        int choice = GetCorrectNumber(cin, 0, 2, "Do you want to save in the same file? (0 - same, 1 - other, 2 - don't save): ", "");
+        if (choice == 2) {
+            cout << "*Changes was lost\n";
+            return false;
+        }
+        if (choice == 1) {
             InputFileName(pts);
         }
         return true;
@@ -472,14 +482,21 @@ bool CheckBeforeSave(PTS& pts) {
     return true;
 }
 
-bool CheckBeforeLoad(PTS& pts) {
+void CheckBeforeExit(PTS& pts) {
     if (!pts.saved()) {
         if (pts.has_saved_file()) {
             cout << "*There are unsaved changes in the system\n";
-            if (GetCorrectNumber(cin, 0, 1, "Do you want to save in the same file? (1 - yes, 0 - no): ", "") == 0) {
-                InputFileName(pts);
+            int choice = GetCorrectNumber(cin, 0, 2, "Do you want to save in the same file? (0 - same, 1 - other, 2 - don't save): ", "");
+            if (choice == 2) {
+                cout << "*Changes was lost\n";
             }
-            pts.save_to_file();
+            else if (choice == 1) {
+                InputFileName(pts);
+                pts.save_to_file();
+            }
+            else if (choice == 0) {
+                pts.save_to_file();
+            }            
         }
         else {
             cout << "*The changes made are new and not saved\n";
@@ -492,6 +509,9 @@ bool CheckBeforeLoad(PTS& pts) {
             }
         }
     }
+}
+
+void CheckBeforeLoad(PTS& pts) {
+    CheckBeforeExit(pts);
     InputFileName(pts);
-    return true;
 }

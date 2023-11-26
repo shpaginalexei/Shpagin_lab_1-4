@@ -96,7 +96,7 @@ bool Graph::isDAG() const {
 
 void Graph::dfsTopologicalSort(int v, vector<bool>& visited, vector<int>& result) const {
     visited[v] = true;
-    for (int u = 0; u < capacity[v].size(); u++) {
+    for (int u = 0; u < adj[v].size(); u++) {
         if (adj[v][u] && !visited[u]) {
             dfsTopologicalSort(u, visited, result);
         }
@@ -159,7 +159,7 @@ bool Graph::bfsMaxFlow(vector<vector<double>>& capacity, int source, int sink, v
 
 double Graph::MaxFlow(const int source, const int sink) const {
     if (edges.empty()) {
-        cout << "**System has no Edges. Topological sorting is not possible" << endl;
+        cout << "**Graph has no Edges. Is not possible to calculate max flow" << endl;
         return -1;
     }
 
@@ -169,9 +169,9 @@ double Graph::MaxFlow(const int source, const int sink) const {
     }
     int s = GetIndexByValue(vertices, source);
     int t = GetIndexByValue(vertices, sink);
+
     vector<vector<double>> cap = capacity;
 
-    // Ford Fulkerson algorithm
     double maxFlow = 0.0;
     vector<int> parent(V, -1);
 
@@ -198,7 +198,7 @@ double Graph::MaxFlow(const int source, const int sink) const {
 
 vector<int> Graph::ShortestPath(const int start, const int end) const {
     if (edges.empty()) {
-        cout << "**System has no Edges. It's not possible to find the shortest path" << endl;
+        cout << "**Graph has no Edges. It's not possible to find the shortest path" << endl;
         return vector<int>();
     }
 

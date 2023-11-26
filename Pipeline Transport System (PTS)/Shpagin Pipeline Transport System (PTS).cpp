@@ -5,6 +5,7 @@
 #include <fstream>
 #include <chrono>
 #include <format>
+
 using namespace std;
 using namespace chrono;
 
@@ -74,16 +75,15 @@ void MainMenu(PTS& pts) {
     case 8:
     {
         cout << "-> Load" << endl;
-        if (CheckBeforeLoad(pts)) {
-            pts.load_from_file();
-        }
+        CheckBeforeLoad(pts);
+        pts.load_from_file();
         BackToMenu();
         break;
     }
     case 0:
     default:
     {
-        system("cls");
+        CheckBeforeExit(pts);
         exit(0);
     }
     }

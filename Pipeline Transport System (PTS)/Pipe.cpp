@@ -83,8 +83,8 @@ double Pipe::get_capasity() const {
     double capasity = (sigma * H / D) / 
         sqrt(pow((4 * R * T)/(mu * M_PI * pow(D, 2) * V_max) , 2) + (64 * L * N * R * T * pow(h, 2))/(pow(M_PI, 2) * mu * pow(D, 5)));
 
-    //return status ? capasity : 0.0; // kg/s
-    return status ? lenght : 0.0;
+    return status ? capasity : 0.0; // kg/s
+    //return status ? lenght : 0.0;
 }
 
 double Pipe::get_weight() const {

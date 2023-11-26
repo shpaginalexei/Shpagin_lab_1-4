@@ -164,6 +164,7 @@ void PTS::add_edge(const int source, const int sink, const int diameter) {
         if (!pipeIDs.empty()) {
             auto pipeID = pipeIDs.begin();
             edges.insert({ *pipeID, Edge(source, sink) });
+            cout << "*Edge " << edges.at(*pipeID) << " | pipe - " << *pipeID << " was added\n";
         }
         else {
             cout << "\n*There are no free pipes with this diameter"
@@ -171,7 +172,8 @@ void PTS::add_edge(const int source, const int sink, const int diameter) {
             Pipe p;
             inputPipeWithoutDiameter(p, diameter);
             pipes.insert({ p.get_id(), p });
-            edges.insert({ p.get_id(), Edge(source, sink)});         
+            edges.insert({ p.get_id(), Edge(source, sink)});
+            cout << "*Edge " << edges.at(p.get_id()) << " | pipe - " << p.get_id() << " was added\n";
         }
         changed = true;
     }
