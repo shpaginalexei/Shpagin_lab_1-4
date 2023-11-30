@@ -5,6 +5,7 @@
 #include <fstream>
 #include <chrono>
 #include <format>
+
 using namespace std;
 using namespace chrono;
 
@@ -19,12 +20,13 @@ void MainMenu(PTS& pts) {
     "3. View Objects",
     "4. Edit Pipes",
     "5. Edit Stations",
-    "6. Save",
-    "7. Load",
+    "6. Graph",
+    "7. Save",
+    "8. Load",
     "0. Exit"
     };
     Print(main_menu, main_menu_size);
-    int menu = GetCorrectNumber(cin, 0, 7, ">> ", "");
+    int menu = GetCorrectNumber(cin, 0, 8, ">> ", "");
     system("cls");
     switch (menu) {
     case 1:
@@ -43,7 +45,6 @@ void MainMenu(PTS& pts) {
     }
     case 3:
     {
-        //exit(1);
         ViewMenu(pts);
         break;
     }
@@ -59,6 +60,11 @@ void MainMenu(PTS& pts) {
     }
     case 6:
     {
+        GraphMenu(pts);
+        break;
+    }
+    case 7:
+    {
         cout << "-> Save" << endl;
         if (CheckBeforeSave(pts)) {
             pts.save_to_file();
@@ -66,21 +72,19 @@ void MainMenu(PTS& pts) {
         BackToMenu();
         break;
     }
-    case 7:
+    case 8:
     {
         cout << "-> Load" << endl;
-        if (CheckBeforeLoad(pts)) {
-            pts.load_from_file();
-        }
+        CheckBeforeLoad(pts);
+        pts.load_from_file();
         BackToMenu();
         break;
     }
     case 0:
     default:
     {
-        system("cls");
+        CheckBeforeExit(pts);
         exit(0);
-        //return;
     }
     }
 }

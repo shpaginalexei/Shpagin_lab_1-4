@@ -8,5 +8,9 @@ void BackToMenu();
 
 void ViewMenu(PTS&);
 void EditMenu(PTS&, const PTS::ObjectType);
+
+void GraphMenu(PTS&);
+
 bool CheckBeforeSave(PTS&);
-bool CheckBeforeLoad(PTS&);
+void CheckBeforeExit(PTS&);
+void CheckBeforeLoad(PTS&);

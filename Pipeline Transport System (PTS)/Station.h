@@ -9,7 +9,7 @@ public:
 	Station();
 	
 	static void reset_max_id();
-	static int get_maxid() { return max_id; }
+	static int get_max_id();
 
 	int get_id() const;
 	std::string get_name() const;

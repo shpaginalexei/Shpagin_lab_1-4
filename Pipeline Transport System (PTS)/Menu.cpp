@@ -229,7 +229,7 @@ void BatchEditing(PTS& pts, const PTS::ObjectType obj) {
     }
     pts.short_view(obj, IDs);
 
-    int max_id = obj == PTS::PIPE ? Pipe::get_maxid() : Station::get_maxid();
+    int max_id = obj == PTS::PIPE ? Pipe::get_max_id() : Station::get_max_id();
     IDs = SelectSpecificIDs(IDs, max_id);
 
     if (!IDs.empty()) {
@@ -291,6 +291,156 @@ void EditMenu(PTS& pts, const PTS::ObjectType obj) {
     }
 }
 
+void AddEdge(PTS& pts) {
+    if (!SystemHasObjects(pts, PTS::STATION)) {
+        return;
+    }
+    cout << "Free Pipes:\n";
+    if (!pts.get_free_pipes(pts.get_ids_objects(PTS::PIPE)).empty()) {
+        pts.short_view(PTS::PIPE, pts.get_free_pipes(pts.get_ids_objects(PTS::PIPE)));
+    }
+    else {
+        cout << "*No free Pipes" << endl;
+    }
+    cout << "Stations:\n";
+    pts.short_view(PTS::STATION, pts.get_ids_objects(PTS::STATION));
+
+    int source = GetCorrectNumber(cin, 1, Station::get_max_id(), "source station id: ", "");
+    int sink = GetCorrectNumber(cin, 1, Station::get_max_id(), "sink station id: ", "");
+    int diameter = Pipe::get_correct_diameter();
+    pts.add_edge(source, sink, diameter);
+}
+
+void RemoveEdge(PTS& pts) {
+    if (!pts.has_edges()) {
+        cout << "**System has no Edges\n";
+        return;
+    }
+    pts.view_edges();
+    int pipe_id = GetCorrectNumber(cin, 1, Pipe::get_max_id(), "Select edge (by pipe id): ", "");
+    pts.remove_edge(pipe_id);
+}
+
+void CalcMaxFlow(PTS& pts) {
+    if (!pts.has_edges()) {
+        cout << "**System has no Edges\n";
+        return;
+    }
+    cout << "Edges:\n";
+    pts.view_edges();
+    int source = GetCorrectNumber(cin, 1, Station::get_max_id(), "source station id: ", "");
+    int sink = GetCorrectNumber(cin, 1, Station::get_max_id(), "sink station id: ", "");
+
+    Graph graph = pts.init_graph();
+    auto max_flow = graph.MaxFlow(source, sink);
+    if (max_flow >= 0) {
+        cout << "\nMax flow: " << max_flow  << " kg/s"
+             << "\n          " << max_flow / 0.657 * 3600 * 24 / pow(10, 6) << " MSCMD (Million Standard Cubic Meter per Day)" << endl;
+    }
+}
+
+void CalcShortestPath(PTS& pts) {
+    if (!pts.has_edges()) {
+        cout << "**System has no Edges\n";
+        return;
+    }
+    pts.view_edges();
+    int start = GetCorrectNumber(cin, 1, Station::get_max_id(), "start station id: ", "");
+    int stop = GetCorrectNumber(cin, 1, Station::get_max_id(), "end station id: ", "");
+
+    Graph graph = pts.init_graph();
+    auto path = graph.ShortestPath(start, stop);
+    if (!path.empty()) {
+        cout << "\nShortest Path: ";
+        for (const auto& v : path) {
+            cout << v << " ";
+        }
+        cout << "\nLenght: " << graph.ShortestPathLength(path) << "\n";
+    }
+}
+
+void GraphMenu(PTS& pts) {
+    cout << "-> Graph " << endl;
+
+    const int graph_menu_size = 7;
+    const std::string graph_menu[graph_menu_size] = {
+    "     1. Add Edge",
+    "     2. View Edges",
+    "     3. Remove Edge",
+    "     4. Topological Sorting",
+    "     5. Max Flow",
+    "     6. Shortest Path",
+    "     0. Return"
+    };
+    Print(graph_menu, graph_menu_size);
+    int graph = GetCorrectNumber(cin, 0, 6, ">> ", "");
+    system("cls");
+    cout << "-> Graph " << endl;
+    switch (graph) {
+    case 1:
+    {
+        cout << "     -> Add Edge" << endl;
+        AddEdge(pts);
+        BackToMenu();
+        break;
+    }    
+    case 2:
+    {
+        cout << "     -> View Edges" << endl;
+        pts.view_edges();
+        BackToMenu();
+        break;
+    }
+    case 3:
+    {
+        cout << "     -> Remove Edge" << endl;
+        RemoveEdge(pts);
+        BackToMenu();
+        break;
+    }
+    case 4:
+    {
+        cout << "     -> Topological Sorting" << endl;
+        if (!pts.has_edges()) {
+            cout << "**System has no Edges\n";
+        }
+        else {
+            Graph graph = pts.init_graph();
+            auto vec = graph.TopologicalSort();
+            if (!vec.empty()) {
+                cout << "Result: ";
+                for (auto& i : vec) {
+                    cout << i << " ";
+                }
+                cout << "\n";
+            }
+        }        
+        BackToMenu();
+        break;
+    }
+    case 5:
+    {
+        cout << "     -> Max Flow" << endl;
+        CalcMaxFlow(pts);
+        BackToMenu();
+        break;
+    }
+    case 6:
+    {
+        cout << "     ->Shortest Path" << endl;
+        CalcShortestPath(pts);
+        BackToMenu();
+        break;
+    }
+    case 0:
+    default:
+    {
+        system("cls");
+        break;
+    }
+    }
+}
+
 void InputFileName(PTS& pts) {
     cout << "Entry name of the file: ";
     string fn;
@@ -312,7 +462,12 @@ bool CheckBeforeSave(PTS& pts) {
         }
     }
     else if (pts.has_saved_file()) {
-        if (GetCorrectNumber(cin, 0, 1, "Do you want to save in the same file? (1 - yes, 0 - no): ", "") == 0) {
+        int choice = GetCorrectNumber(cin, 0, 2, "Do you want to save in the same file? (0 - same, 1 - other, 2 - don't save): ", "");
+        if (choice == 2) {
+            cout << "*Changes was lost\n";
+            return false;
+        }
+        if (choice == 1) {
             InputFileName(pts);
         }
         return true;
@@ -327,14 +482,21 @@ bool CheckBeforeSave(PTS& pts) {
     return true;
 }
 
-bool CheckBeforeLoad(PTS& pts) {
+void CheckBeforeExit(PTS& pts) {
     if (!pts.saved()) {
         if (pts.has_saved_file()) {
             cout << "*There are unsaved changes in the system\n";
-            if (GetCorrectNumber(cin, 0, 1, "Do you want to save in the same file? (1 - yes, 0 - no): ", "") == 0) {
-                InputFileName(pts);
+            int choice = GetCorrectNumber(cin, 0, 2, "Do you want to save in the same file? (0 - same, 1 - other, 2 - don't save): ", "");
+            if (choice == 2) {
+                cout << "*Changes was lost\n";
             }
-            pts.save_to_file();
+            else if (choice == 1) {
+                InputFileName(pts);
+                pts.save_to_file();
+            }
+            else if (choice == 0) {
+                pts.save_to_file();
+            }            
         }
         else {
             cout << "*The changes made are new and not saved\n";
@@ -347,6 +509,9 @@ bool CheckBeforeLoad(PTS& pts) {
             }
         }
     }
+}
+
+void CheckBeforeLoad(PTS& pts) {
+    CheckBeforeExit(pts);
     InputFileName(pts);
-    return true;
 }

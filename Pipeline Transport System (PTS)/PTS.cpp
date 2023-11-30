@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 
+
 using namespace std;
 
 
@@ -11,6 +12,10 @@ bool check_pipe_by_name(const Pipe& p, const string substring) {
 
 bool check_pipe_by_status(const Pipe& p, const bool status) {
     return (p.get_status() == status);
+}
+
+bool check_pipe_by_diameter(const Pipe& p, const int diameter) {
+    return (p.get_diameter() == diameter);
 }
 
 bool check_station_by_name(const Station& s, const string substring) {
@@ -53,11 +58,29 @@ void PTS::add(const ObjectType obj) {
 void PTS::remove(const ObjectType obj, const int ID) {
     switch (obj) {
     case PIPE: { 
-        pipes.erase(ID); 
+        if (pipes.contains(ID)) {
+            pipes.erase(ID);
+        }        
+        if (edges.contains(ID)) {
+            cout << "*Edge " << edges.at(ID) << " | pipe - " << ID << " was deleted\n";
+            edges.erase(ID);
+        }
         break; 
     }
     case STATION: { 
-        stations.erase(ID); 
+        if (stations.contains(ID)) {
+            stations.erase(ID);
+        }
+        auto it = edges.cbegin();
+        while (it != edges.cend()) {
+            if (it->second.source == ID || it->second.sink == ID) {
+                cout << "*Edge " << it->second << " | pipe - " << it->first << " was deleted\n";
+                it = edges.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
         break; 
     }
     }
@@ -84,9 +107,10 @@ void PTS::short_view(const ObjectType obj, const unordered_set<int>& IDs) const 
     switch (obj) {
     case PIPE: {
         for (auto& id : IDs) {
-            cout << "id::"         << id 
-                 << " | name - "   << pipes.at(id).get_name() 
-                 << " | status - " << pipes.at(id).get_status_string() << endl;
+            cout << "id::"           << id 
+                 << " | name - "     << pipes.at(id).get_name()
+                 << " | diameter - " << pipes.at(id).get_diameter() << " mm"
+                 << " | status - "   << pipes.at(id).get_status_string() << endl;
         }
         break;
     }
@@ -123,9 +147,75 @@ unordered_set<int> PTS::get_ids_objects(const ObjectType obj) const {
     }
 }
 
+unordered_set<int> PTS::get_free_pipes(const unordered_set<int>& IDs) const {
+    unordered_set<int> free_IDs;
+    for (auto& id : IDs) {
+        if (!edges.contains(id)) {
+            free_IDs.insert(id);
+        }
+    }
+    return free_IDs;
+}
+
+void PTS::add_edge(const int source, const int sink, const int diameter) {
+    if (stations.contains(source) && stations.contains(sink)) {
+        auto pipeIDs = search(check_pipe_by_diameter, diameter);
+        pipeIDs = get_free_pipes(pipeIDs);
+        if (!pipeIDs.empty()) {
+            auto pipeID = pipeIDs.begin();
+            edges.insert({ *pipeID, Edge(source, sink) });
+            cout << "*Edge " << edges.at(*pipeID) << " | pipe - " << *pipeID << " was added\n";
+        }
+        else {
+            cout << "\n*There are no free pipes with this diameter"
+                 << "\nPlease, add new pipe with diameter equal to " << diameter << " mm" << endl;
+            Pipe p;
+            inputPipeWithoutDiameter(p, diameter);
+            pipes.insert({ p.get_id(), p });
+            edges.insert({ p.get_id(), Edge(source, sink)});
+            cout << "*Edge " << edges.at(p.get_id()) << " | pipe - " << p.get_id() << " was added\n";
+        }
+        changed = true;
+    }
+    else {
+        cout << "\n**There are no stations with such IDs\n";
+    }
+    
+}
+
+void PTS::view_edges() const {
+    if (!edges.empty()) {
+        for (const auto& [pipe_id, e] : edges) {
+            cout << e << " | pipe - " << pipe_id << endl;
+        }
+    }
+    else {
+        cout << "*System has no Edges\n";
+    }
+}
+
+void PTS::remove_edge(const int pipe_id) {
+    if (edges.contains(pipe_id)) {
+        cout << "*Edge " << edges.at(pipe_id) << " | pipe - " << pipe_id << " was deleted\n";
+        edges.erase(pipe_id);
+    }
+    else {
+        cout << "pipe_id::" << pipe_id << " *No such Edge exists\n";
+    }
+}
+
+bool PTS::has_edges() const {
+    return !edges.empty();
+}
+
+Graph PTS::init_graph() const {
+    return Graph(edges, pipes);
+}
+
 void PTS::clear_system() {
     pipes.clear();
     stations.clear();
+    edges.clear();
     Pipe::reset_max_id();
     Station::reset_max_id();
     changed = false;
@@ -157,12 +247,16 @@ void PTS::save_to_file() {
     if (file.is_open()) {
         size_t count_pipes = pipes.size();
         size_t count_stations = stations.size();
-        file << count_pipes << " " << count_stations << endl;
+        size_t count_edges = edges.size();
+        file << count_pipes << " " << count_stations << " " << count_edges << endl;
         for (auto& [id, p] : pipes) {
             file << p;
         }
         for (auto& [id, s] : stations) {
             file << s;
+        }
+        for (auto& [pipe_id, e] :edges) {
+            file << e << " " << pipe_id << endl;
         }
         cout << file_name << ": " << count_pipes << " Pipes and "
              << count_stations << " Stations saved successfully!" << endl;
@@ -183,10 +277,12 @@ void PTS::load_from_file() {
     if (file.is_open()) {
         Pipe new_pipe;
         Station new_station;
+        Edge new_edge;
         int count_pipes;
         int count_stations;
+        int count_edges; int pipe_id;
 
-        file >> count_pipes >> count_stations;
+        file >> count_pipes >> count_stations >> count_edges;
         for (int i = 0; i < count_pipes; i++) {
             file >> new_pipe;
             pipes.insert({ new_pipe.get_id(), new_pipe });
@@ -194,6 +290,11 @@ void PTS::load_from_file() {
         for (int i = 0; i < count_stations; i++) {
             file >> new_station;
             stations.insert({ new_station.get_id(), new_station });
+        }
+        for (int i = 0; i < count_edges; i++) {
+            file >> new_edge;
+            file >> pipe_id;
+            edges.insert({ pipe_id, new_edge });
         }
 
         cout << file_name << ": " << count_pipes << " Pipes and "

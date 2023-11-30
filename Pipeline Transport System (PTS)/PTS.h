@@ -1,9 +1,11 @@
 #pragma once
 #include "Pipe.h"
 #include "Station.h"
+#include "Graph.h"
 #include "Utilities.h"
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 
 class PTS
@@ -26,6 +28,7 @@ public:
 	std::unordered_set<int> search(filter<Station, T>, const T) const;
 
 	std::unordered_set<int> get_ids_objects(const ObjectType) const;
+	std::unordered_set<int> get_free_pipes(const std::unordered_set<int>&) const;
 
 	bool empty() const;
 	bool has_saved_file() const;
@@ -36,10 +39,19 @@ public:
 	void save_to_file();
 	void load_from_file();
 
+	// Graph
+	void add_edge(const int, const int, const int);
+	void view_edges() const;
+	void remove_edge(const int);
+	bool has_edges() const;
+	Graph init_graph() const;
+
 private:
 
 	std::unordered_map<int, Pipe> pipes{};
 	std::unordered_map<int, Station> stations{};
+
+	std::unordered_map<int, Edge> edges{};
 
 	void clear_system();
 	bool changed = false;
@@ -50,6 +62,7 @@ private:
 
 bool check_pipe_by_name(const Pipe&, const std::string);
 bool check_pipe_by_status(const Pipe&, const bool);
+bool check_pipe_by_diameter(const Pipe&, const int);
 bool check_station_by_name(const Station&, const std::string);
 bool check_station_by_unactive_workshops(const Station&, const double);
 

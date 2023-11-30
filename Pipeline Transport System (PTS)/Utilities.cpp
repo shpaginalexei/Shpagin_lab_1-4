@@ -1,7 +1,5 @@
 #include "Utilities.h"
 #include <string>
-//#include <sstream>
-//#include <algorithm>
 
 using namespace std;
 
@@ -28,28 +26,6 @@ void InputLine(istream& in, string& str) {
 }
 
 unordered_set<int> SelectIDs(const unordered_set<int>& all_IDs, int max_id) {
-    /*unordered_set<int> IDs;
-    string str = " ";
-    string line = " ";
-    while (line.back() != '#') {
-        getline(cin, line);
-        str += line + "\n";
-    }
-    stringstream s{ str };
-    int id;
-    while (!s.eof()) {
-        id = GetCorrectNumber(s, 0, max_id, "", "");
-        if (all_IDs.contains(id)) {
-            IDs.insert(id);
-        }
-        else {
-            s.clear();
-            s.ignore(numeric_limits<streamsize>::max(), ' ');
-        }
-    }
-    cerr << str << endl;
-    return IDs;*/
-
     unordered_set<int> IDs;
     int id;
     do {
