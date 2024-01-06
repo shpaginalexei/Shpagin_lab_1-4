@@ -175,6 +175,7 @@ unordered_set<int> SearchObjects(PTS& pts, const PTS::ObjectType obj) {
         return SearchStations(pts);
     }
     }
+    return unordered_set<int>();
 }
 
 void Edit(PTS& pts, const PTS::ObjectType obj, const unordered_set<int>& IDs) {
