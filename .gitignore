@@ -402,3 +402,6 @@ FodyWeavers.xsd
 
 # Log folder
 .logs/
+
+# .exe files
+*.exe

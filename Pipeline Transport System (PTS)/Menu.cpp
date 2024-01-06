@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 #include <conio.h>
+#include <cmath>        
 
 using namespace std;
 
